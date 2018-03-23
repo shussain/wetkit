@@ -1,0 +1,1 @@
+window.CKEDITOR_BASEPATH = '/wetkit_nnhpd_hr/profiles/wetkit/libraries/ckeditor/';

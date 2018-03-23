@@ -1,0 +1,1 @@
+window.CKEDITOR_BASEPATH = '/legal_opinion_demo/profiles/wetkit/libraries/ckeditor/';
