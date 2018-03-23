@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the Organic groups module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function og_permissions_inherit_uninstall() {
+  // Delete all variables for this module.
+  // There is a chance that a variable might be left over if a node type is
+  // deleted, so lets delete all the variables that match our variable prefix
+  // to be sure we get everything.
+  db_delete('variable')
+    ->condition('name', '%' . db_like('og_permissions_inherit_from_') . '%', 'LIKE')
+    ->execute();
+  cache_clear_all('variables', 'cache_bootstrap');
+}

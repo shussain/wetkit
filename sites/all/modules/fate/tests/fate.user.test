@@ -1,0 +1,50 @@
+<?php
+/**
+ * @file
+ * Test user integration for the FATE module.
+ */
+
+class FateUserTest extends FateTestHelper {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'FATE: User',
+      'description' => 'Testing FATE for users.',
+      'group' => 'FATE',
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function setUp(array $modules = array()) {
+    $this->adminPerms = array(
+      'administer users',
+      'access user profiles',
+    );
+    $this->entity_type = 'user';
+    $this->bundle = 'user';
+    $this->bundle_label = 'User';
+    $this->field_admin_path = 'admin/config/people/accounts/fields';
+
+    parent::setUp($modules);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function createEntity() {
+    return $this->adminUser;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function getEntityPath($entity) {
+    return 'user/' . $entity->uid;
+  }
+
+}

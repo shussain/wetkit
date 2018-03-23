@@ -1,0 +1,55 @@
+<?php
+/**
+ * @file
+ * Test FPP integration for the FATE module.
+ */
+
+class FateFieldablePanelsPanesTest extends FateTestHelper {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'FATE: Fieldable Panels Panes',
+      'description' => 'Testing FATE for FPPs.',
+      'group' => 'FATE',
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function setUp(array $modules = array()) {
+    $this->adminPerms = array(
+      'administer fieldable panels panes',
+    );
+    $this->entity_type = 'fieldable_panels_pane';
+    $this->bundle = 'fieldable_panels_pane';
+    $this->bundle_label = 'Panels Pane';
+    $this->field_admin_path = 'admin/structure/fieldable-panels-panes/' . $this->bundle . '/fields';
+
+    // Extra modules that need to be installed.
+    $modules[] = 'fieldable_panels_panes';
+
+    parent::setUp($modules);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function createEntity() {
+    $fpp = new StdClass();
+    $fpp->bundle = $this->bundle;
+    $fpp->title = $this->randomName(8);
+    return fieldable_panels_panes_save($fpp);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function getEntityPath($entity) {
+    return 'admin/structure/fieldable-panels-panes/view/' . $entity->fpid;
+  }
+
+}

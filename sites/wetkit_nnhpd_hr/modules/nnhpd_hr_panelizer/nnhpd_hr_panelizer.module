@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the nnhpd_hr_panelizer feature.
+ */
+
+include_once 'nnhpd_hr_panelizer.features.inc';

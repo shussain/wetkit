@@ -1,0 +1,24 @@
+name = Field API Tab Editor
+description = Allows individual Field API fields to be modified via individual tabs.
+core = 7.x
+package = Chaos tool suite
+
+dependencies[] = ctools (>=1.4)
+dependencies[] = entity
+
+; Tests.
+files[] = tests/fate.helper.test
+files[] = tests/fate.node.test
+files[] = tests/fate.taxonomy_term.test
+files[] = tests/fate.user.test
+files[] = tests/fate.fieldable_panels_panes.test
+
+; Needed for the tests.
+test_dependencies[] = fieldable_panels_panes
+
+; Information added by Drupal.org packaging script on 2016-04-19
+version = "7.x-1.2"
+core = "7.x"
+project = "fate"
+datestamp = "1461072547"
+

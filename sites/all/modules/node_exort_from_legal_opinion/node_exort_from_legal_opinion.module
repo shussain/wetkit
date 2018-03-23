@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Node_exort_from_legal_opinion feature.
+ */
+
+include_once 'node_exort_from_legal_opinion.features.inc';

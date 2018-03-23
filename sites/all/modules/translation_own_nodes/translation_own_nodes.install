@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function translation_own_nodes_install() {
+  // Make sure hook_module_implements_alter() runs last
+  db_update('system')
+    ->fields(array('weight' => 99))
+    ->condition('name', 'translation_own_nodes')
+    ->execute();
+}
+
+/**
+ * Implements hook_update_N().
+ * Makes sure our module executes last, so that it won't be overriden.
+ */
+function translation_own_nodes_update_7001() {
+  db_update('system')
+    ->fields(array('weight' => 99))
+    ->condition('name', 'translation_own_nodes')
+    ->execute();
+}

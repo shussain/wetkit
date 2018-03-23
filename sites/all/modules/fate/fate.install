@@ -1,0 +1,23 @@
+<?php
+/**
+ * @file
+ *
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function fate_uninstall() {
+  foreach (field_read_instances() as $instance) {
+    if (isset($instance['settings']['fate'])) {
+      unset($instance['settings']['fate']);
+      if (isset($instance['settings']['fate_label'])) {
+        unset($instance['settings']['fate_label']);
+      }
+      if (isset($instance['settings']['fate_contextual_link'])) {
+        unset($instance['settings']['fate_contextual_link']);
+      }
+      field_update_instance($instance);
+    }
+  }
+}

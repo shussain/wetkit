@@ -1,0 +1,13 @@
+diff --git a/fate.pages.inc b/fate.pages.inc
+index de1495a..ba2f373 100644
+--- a/fate.pages.inc
++++ b/fate.pages.inc
+@@ -45,7 +45,7 @@ function fate_field_edit_page($entity_type, $entity, $field_name, $langcode = NU
+   );
+ 
+   // Set the page title.
+-  drupal_set_title(t('Edit <em>@title</em> field', array('@title' => $field_instance['label'])), PASS_THROUGH);
++  drupal_set_title(t('Edit <em>@title</em> field', array('@title' => t($field_instance['label']))), PASS_THROUGH);
+ 
+   // Compile the form.
+   $output = drupal_build_form('fate_field_edit_form', $form_state);

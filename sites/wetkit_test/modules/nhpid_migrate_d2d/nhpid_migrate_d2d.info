@@ -1,0 +1,16 @@
+name = "NHPID DMS D7 to D7 migration"
+description = "Migrate content from old D7 site to new D7"
+package = "NHPID"
+core = 7.x
+hidden = False
+
+dependencies[] = migrate
+dependencies[] = migrate_d2d
+
+files[] = nhpid_migrate_d2d.migrate.inc
+files[] = node.inc
+files[] = field_collection.inc
+files[] = accessory_tables.inc
+
+
+

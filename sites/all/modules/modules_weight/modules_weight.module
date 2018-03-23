@@ -1,0 +1,136 @@
+<?php
+
+/**
+ * @file
+ * Modules weight functionality implementation.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function modules_weight_help($path, $arg) {
+  switch ($path) {
+    // Main module help.
+    case 'admin/help#modules_weight':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Sometimes we need to modify modules execution order, and some people could write a code that execute the query to modify the weight of a module in the system table, some one might go straight to his favorite SQL client and modify the record directly. This module provides an interface to reorder the weight modules.') . '</p>';
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('Configuring the module') . '</dt>';
+      $output .= '<dd>' . t('You can manage the module settings from the <a href="@config-page">Modules Weight Settings</a> page. For this you need the <em>Administer Modules Weight</em> permission.', array('@config-page' => url('admin/config/system/modules-weight/configuration'))) . '</dd>';
+      $output .= '<dt>' . t('Changing the modules weight') . '</dt>';
+      $output .= '<dd>' . t('You can select the weight for all the installed and compatible modules according to the module settings from the <a href="@config-page">Modules Weight</a> page. For this you need the <em>Administer Modules Weight</em> permission.', array('@config-page' => url('admin/config/system/modules-weight'))) . '</dd>';
+      $output .= '</dl>';
+
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function modules_weight_permission() {
+  return array(
+    'administer modules weight' => array(
+      'title' => t('Administer Modules Weight'),
+      'description' => t('Allow access to configure the module settings.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function modules_weight_menu() {
+  $items = array();
+
+  $items['admin/config/system/modules-weight'] = array(
+    'title' => 'Modules Weight',
+    'description' => 'Provide an interface to change the modules weight.',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('modules_weight_admin_config_page_form'),
+    'access arguments' => array('administer modules weight'),
+    'file' => 'modules_weight.admin.inc',
+  );
+
+  $items['admin/config/system/modules-weight/default'] = array(
+    'title' => 'Modules Weight',
+    'description' => 'Provide an interface to change the modules weight.',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 2,
+  );
+
+  $items['admin/config/system/modules-weight/configuration'] = array(
+    'title' => 'Settings',
+    'description' => 'Modules Weight Settings',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('modules_weight_configuration_form'),
+    'access arguments' => array('administer modules weight'),
+    'file' => 'modules_weight.admin.inc',
+    'weight' => 2,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function modules_weight_theme() {
+  return array(
+    'modules_weight_admin_config_page_form' => array(
+      'render element' => 'form',
+    ),
+  );
+}
+
+/**
+ * Theme function callback.
+ */
+function theme_modules_weight_admin_config_page_form($variables) {
+  $form = $variables['form'];
+  // The table rows.
+  $rows = array();
+
+  foreach (element_children($form['modules']) as $id) {
+    // Adding row info.
+    $rows[] = array(
+      drupal_render($form['modules'][$id]['name']),
+      drupal_render($form['modules'][$id]['description']),
+      drupal_render($form['modules'][$id]['weight']),
+      drupal_render($form['modules'][$id]['package']),
+    );
+  }
+  // Read more about the empty class attribute in HTML at:
+  // https://stackoverflow.com/q/30748847/3653989 .
+  $class = array();
+  if (module_exists('responsive_tables')) {
+    $class[] = RESPONSIVE_PRIORITY_MEDIUM;
+  }
+  // The table header.
+  $header = array(
+    t('Name'),
+    array(
+      'data' => t('Description'),
+      // Hidding the description on narrow width devices.
+      'class' => $class,
+    ),
+    t('Weight'),
+    array(
+      'data' => t('Package'),
+      // Hidding the description on narrow width devices.
+      'class' => $class,
+    ),
+  );
+
+  $output = theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+  ));
+
+  $output .= drupal_render_children($form);
+
+  return $output;
+}

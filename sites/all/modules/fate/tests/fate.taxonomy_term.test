@@ -1,0 +1,54 @@
+<?php
+/**
+ * @file
+ * Test taxonomy term integration for the FATE module.
+ */
+
+class FateTaxonomyTermTest extends FateTestHelper {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'FATE: Taxonomy Term',
+      'description' => 'Testing FATE for terms.',
+      'group' => 'FATE',
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function setUp(array $modules = array()) {
+    $this->adminPerms = array(
+      'administer taxonomy',
+    );
+    $this->entity_type = 'taxonomy_term';
+    $this->bundle = 'tags';
+    $this->bundle_label = 'Tags';
+    $this->field_admin_path = 'admin/structure/taxonomy/' . $this->bundle . '/fields';
+
+    parent::setUp($modules);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function createEntity() {
+    $vocab = taxonomy_vocabulary_machine_name_load($this->bundle);
+    $term = new StdClass();
+    $term->vid = $vocab->vid;
+    $term->name = $this->randomName(8);
+    taxonomy_term_save($term);
+    return $term;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function getEntityPath($entity) {
+    return 'taxonomy/term/' . $entity->tid;
+  }
+
+}

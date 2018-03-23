@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function modules_weight_install() {
+  // Show or not the core modules.
+  variable_set('modules_weight_show_system_modules', FALSE);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function modules_weight_uninstall() {
+  variable_del('modules_weight_show_system_modules');
+}
+
+/**
+ * Change the name of the show_system_modules variable.
+ */
+function modules_weight_update_7100() {
+  // All variables defined by your module must be prefixed with your module's
+  // name to avoid name collisions with others.
+  // Getting the old value.
+  $old_value = variable_get('show_system_modules', FALSE);
+  // Setting the value to the new variable.
+  variable_set('modules_weight_show_system_modules', $old_value);
+  // Deleting the old variable.
+  variable_del('show_system_modules');
+}

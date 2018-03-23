@@ -1,0 +1,9 @@
+name = Translation own nodes
+description = Extends Content Translation and Entity Translation with a permission to translate own content.
+core = 7.x
+; Information added by Drupal.org packaging script on 2017-02-09
+version = "7.x-1.0+2-dev"
+core = "7.x"
+project = "translation_own_nodes"
+datestamp = "1486651991"
+

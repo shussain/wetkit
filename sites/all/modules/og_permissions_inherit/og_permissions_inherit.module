@@ -1,0 +1,96 @@
+<?php
+/**
+ * @file
+ * Enable inheriting of og permissions where ogs are related via og_group_ref.
+ */
+
+require drupal_get_path('module', 'og_permissions_inherit') . '/og_permissions_inherit.common.inc';
+/**
+ * Implements hook_og_user_access_alter().
+ *
+ * Inherit every permission the user had in it's og ancestry.
+ * i.e. we only "add" permissions.
+ */
+function og_permissions_inherit_og_user_access_alter(&$perms, $context) {
+  // Only run against group type contexts.
+  if (isset($context['group'])) {
+    $og_permissions_inherit_from = variable_get('og_permissions_inherit_from_' . $context['group']->type);
+    // Check for access permissions up the ancestry, if there is one.
+    if ($og_permissions_inherit_from !== "HEAD") {
+      if (!empty($perms[$context['string']])) {
+        // Permission is already TRUE, no need to check.
+        return;
+      }
+      else {
+        $ancestor_groups = og_permissions_inherit_ancestors_load($context['group'], FALSE);
+        // Add permissions according to the users ancestor groups' privileges.
+        _og_permissions_inherit_check_access($perms, $context, $ancestor_groups);
+      }
+    }
+  }
+}
+
+/**
+ * Check access for this group's ancestry.
+ */
+function _og_permissions_inherit_check_access(&$perms, $context, $ancestor_groups) {
+  foreach ($ancestor_groups as $ancestor_group_id) {
+    if (og_user_access("node", $ancestor_group_id, $context['string'], $context['account'], TRUE)) {
+      $perms[$context['string']] = TRUE;
+      return;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function og_permissions_inherit_form_node_type_form_alter(&$form, &$form_state) {
+  $node_type = $form['#node_type']->type;
+  if (og_is_group_type('node', $node_type)) {
+    $group_content_options = og_get_all_group_entity();
+    if (!$group_content_options) {
+      $description = '';
+      $description .= '<br/>' . t('There are no group bundles defined.');
+    }
+    $target_type = !empty($form_state['values']['target_type']) ? $form_state['values']['target_type'] : key($group_content_options);
+    $entity_info = entity_get_info($target_type);
+    $bundles = array();
+    $bundles['HEAD'] = '<< HEAD >>';
+    foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+      if (og_is_group_type($target_type, $bundle_name) && $bundle_name !== $form['#node_type']->type) {
+        $bundles[$bundle_name] = $bundle_info['label'];
+      }
+    }
+    $og_permissions_inherit_from = variable_get('og_permissions_inherit_from_' . $form['#node_type']->type);
+    // Get the bundles that are acting as group.
+    $form['og']['og_permissions_inherit_from'] = array(
+      '#prefix' => '<div id="og-settings-wrapper">',
+      '#suffix' => '</div>',
+      '#type' => 'select',
+      '#title' => t('Inherit permissions from another OG node type'),
+      '#options' => $bundles,
+      '#default_value' => $og_permissions_inherit_from,
+      '#size' => 1,
+      '#multiple' => FALSE,
+      '#description' => t('The bundles of the entity type that can be referenced. Optional, leave empty for all bundles.'),
+    );
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function og_permissions_inherit_module_implements_alter(&$implementations, $hook) {
+  // We have to ensure this module's hook_form_FORM_ID_alter is called after
+  // the og module's.  This way we will have organic group information about
+  // node as supplied by the og module.
+  if ($hook == 'form_alter' && !isset($implementations['og_permissions_inherit'])) {
+    $implementations['og_permissions_inherit'] = FALSE;
+  }
+  if ($hook == 'form_alter' && isset($implementations['og_permissions_inherit'])) {
+    $group = $implementations['og_permissions_inherit'];
+    unset($implementations['og_permissions_inherit']);
+    $implementations['og_permissions_inherit'] = $group;
+  }
+}

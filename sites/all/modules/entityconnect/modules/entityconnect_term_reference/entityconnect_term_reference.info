@@ -1,0 +1,14 @@
+name = "Entity Connect and Term Reference field."
+description = "Allows for referenced entity to be created and edited from the term reference field (from core)."
+core = "7.x"
+package = Entity Connect
+
+dependencies[] = "taxonomy"
+dependencies[] = "entityconnect"
+
+; Information added by Drupal.org packaging script on 2017-02-22
+version = "7.x-2.0-rc1+1-dev"
+core = "7.x"
+project = "entityconnect"
+datestamp = "1487798287"
+

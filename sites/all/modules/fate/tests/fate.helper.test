@@ -1,0 +1,200 @@
+<?php
+/**
+ * @file
+ * Base class for tests for the FATE module.
+ */
+
+class FateTestHelper extends DrupalWebTestCase {
+
+  /**
+   * Admin user.
+   *
+   * @var \StdClass
+   */
+  protected $adminUser;
+
+  protected $adminPerms = array();
+
+  // Details of the entity type / bundle that will be tested.
+  protected $entity_type = '';
+  protected $bundle = '';
+  protected $bundle_label = '';
+
+  // Details of a field that will be used..
+  protected $field_name = 'field_test_string';
+  protected $field_label = 'Test string';
+  protected $field_type = 'text';
+  protected $widget_type = 'text_textfield';
+
+  // The internal path to the field admin page for this entity bundle.
+  protected $field_admin_path = '';
+
+  /**
+   * {@inheritdoc}
+   */
+  function setUp(array $modules = array()) {
+    $modules[] = 'fate';
+
+    parent::setUp($modules);
+
+    // Create an admin user.
+    $perms = array_merge(array(
+      'use fate',
+    ), $this->adminPerms);
+    $this->assertNotEqual($this->adminPerms, NULL);
+    $this->assertNotEqual($perms, NULL);
+    $this->adminUser = $this->drupalCreateUser($perms);
+  }
+
+  /**
+   * Test methods.
+   */
+
+  /**
+   * Test that FATE works for this entity bundle.
+   */
+  public function testFate() {
+    // Log in the admin user.
+    $this->drupalLogin($this->adminUser);
+
+    // Add a field to the Tags vocabulary so the rest of the functionality can
+    // be tested.
+    $this->addFieldToEntityBundle();
+
+    // Confirm the checkbox exists.
+    $this->confirmFieldOptionExists($this->field_admin_path . '/' . $this->field_name);
+
+    // Confirm the checkbox can be saved.
+    $this->enableForBundle($this->field_admin_path, $this->field_name);
+
+    // Built a test entity.
+    $entity = $this->createEntity();
+    $entity_path = $this->getEntityPath($entity);
+
+    // Try loading the custom path.
+    $this->drupalGet($entity_path . '/' . FATE_MENU_PREFIX . $this->field_name);
+    $this->assertResponse(200);
+
+    // Confirm the page contains what was expected.
+    $this->assertText(strip_tags(t('Edit @field field', array('@field' => $this->field_label))));
+    $this->assertFieldByName($this->field_name . '[und][0][value]');
+
+    // Try submitting the field.
+    $edit = array(
+      $this->field_name . '[und][0][value]' => $this->randomName(32),
+    );
+    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->assertResponse(200);
+    $this->assertEqual($this->getURL(), url($entity_path, array('absolute' => TRUE)));
+  }
+
+  /**
+   * Helper methods.
+   */
+
+  /**
+   * Add a text field to a specific entity bundle.
+   *
+   * @param string $form_path
+   *   The system path to an admin form that contains a field selector.
+   */
+  function addFieldToEntityBundle() {
+    // Load the field settings form.
+    $this->drupalGet($this->field_admin_path);
+    $this->assertResponse(200);
+
+    // Add the field to the entity bundle's field settings form.
+    $edit = array(
+      'fields[_add_new_field][label]' => $this->field_label,
+      'fields[_add_new_field][weight]' => 41,
+      'fields[_add_new_field][field_name]' => str_replace('field_', '', $this->field_name),
+      'fields[_add_new_field][type]' => $this->field_type,
+      'fields[_add_new_field][widget_type]' => $this->widget_type,
+    );
+    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->assertResponse(200);
+    $this->assertRaw(t('Field settings'));
+
+    // Submit the field global settings page.
+    $this->drupalPost(NULL, array(), t('Save field settings'));
+    $this->assertRaw(t('Updated field %label field settings.', array('%label' => $this->field_label)));
+    $this->assertRaw(t('%type settings', array('%type' => $this->bundle_label)));
+
+    // Submit the field instance settings page.
+    $this->drupalPost(NULL, array(), t('Save settings'));
+    $this->assertResponse(200);
+    $this->assertRaw(t('Saved %label configuration', array('%label' => $this->field_label)));
+
+    // Should be back on the main field settings page again.
+    $this->assertEqual($this->getURL(), url($this->field_admin_path, array('absolute' => TRUE)));
+  }
+
+  /**
+   * Confirm the checkbox exists on a field.
+   *
+   * @param string $field_path
+   *   The path to a field instance's edit page.
+   */
+  function confirmFieldOptionExists($field_path) {
+    // Load the Article content type's field settings.
+    $this->drupalGet($field_path);
+    $this->assertResponse(200);
+
+    // Confirm the appropriate field exists.
+    $this->assertFieldByName('instance[settings][fate]');
+  }
+
+  /**
+   * Enable FATE for a field.
+   *
+   * @param string $form_path
+   *   The system path to an admin form that contains a field selector.
+   * @param string $field_name
+   *   The field to add to this entity bundle.
+   */
+  function enableForBundle($form_path, $field_name) {
+    // Load the Article content type's field settings.
+    $this->drupalGet($form_path . '/' . $field_name);
+    $this->assertResponse(200);
+
+    // Confirm the appropriate field exists.
+    $this->assertFieldByName('instance[settings][fate]');
+
+    // Turn on FATE for this field.
+    $edit['instance[settings][fate]'] = TRUE;
+
+    // Submit the form.
+    $this->drupalPost(NULL, $edit, t('Save settings'));
+
+    // Confirm the form submitted correctly.
+    $this->assertResponse(200);
+    $this->assertRaw(t('Saved %label configuration.', array('%label' => $this->field_label)));
+
+    // Should be back at the bundle's field UI page.
+    $this->assertEqual($this->getUrl(), url($form_path, array('absolute' => TRUE)));
+  }
+
+  /**
+   * Create an entity for this entity bundle. Must be overloaded.
+   *
+   * @return object
+   *   A full entity object.
+   */
+  function createEntity() {
+    return new StdClass();
+  }
+
+  /**
+   * Get the system path to an entity of this type.
+   *
+   * @param object $entity
+   *   The entity object to work with.
+   *
+   * @return string
+   *   The system path for the requested entity.
+   */
+  function getEntityPath($entity) {
+    return '';
+  }
+
+}

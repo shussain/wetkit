@@ -1,0 +1,240 @@
+<?php
+/**
+ * @file
+ * Adds direct field editing via custom tabs.
+ */
+
+// Menu links are prefixed with this string to help separate.
+define('FATE_MENU_PREFIX', 'fate-');
+
+/**
+ * Implements hook_permission().
+ */
+function fate_permission() {
+  return array(
+    'use fate' =>  array(
+      'title' => t('Use Field API Tab Editor'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function fate_menu() {
+  $items = array();
+
+  foreach (fate_supported_fields() as $field) {
+    // Nodes and other basic entity types that have a display page with a menu
+    // item the format ENTITYTYPE/%ENTITYTYPE.
+    $path = $field['entity_type'] . '/%' . $field['entity_type'];
+    $pos = 1;
+
+    // Trigger hook_fate_entity_path_alter().
+    drupal_alter('fate_entity_path', $path, $pos, $field['entity_type']);
+
+    // Append the prefix and field name to build the custom menu path.
+    $path .= '/' . FATE_MENU_PREFIX . $field['field_name'];
+
+    $items[$path] = array(
+      'title' => $field['label'],
+      'page callback' => 'fate_field_edit_page',
+      'page arguments' => array($field['entity_type'], $pos, $field['field_name']),
+      'access callback' => 'fate_check_access',
+      'access arguments' => array($field['entity_type'], $pos, $field['field_name']),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'fate.pages.inc',
+    );
+
+    // Optional context menu.
+    if (!empty($field['contextual_link'])) {
+      $items[$path]['context'] = MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE;
+    }
+  }
+
+  return $items;
+}
+
+/**
+ * Implements hook_fate_entity_path_alter() on behalf of FPP.
+ */
+function fieldable_panels_panes_fate_entity_path_alter(&$path, &$pos, $entity_type) {
+  if ($entity_type == 'fieldable_panels_pane') {
+    $path = 'admin/structure/fieldable-panels-panes/view/%fieldable_panels_panes';
+    $pos = 4;
+  }
+}
+
+/**
+ * Implements hook_fate_entity_path_alter() on behalf of Taxonomy.
+ */
+function taxonomy_fate_entity_path_alter(&$path, &$pos, $entity_type) {
+  if ($entity_type == 'taxonomy_term') {
+    $path = 'taxonomy/term/%taxonomy_term';
+    $pos = 2;
+  }
+}
+
+function fate_supported_fields() {
+  $fields = &drupal_static(__FUNCTION__);
+
+  if (!isset($fields)) {
+    $info = field_info_instances();
+    $fields = array();
+
+    foreach ($info as $entity_type => $bundles) {
+      foreach ($bundles as $bundle => $instances) {
+        foreach ($instances as $field_name => $instance) {
+          // Only proceed if the FATE page is requested.
+          if (!empty($instance['settings']['fate'])) {
+            $fields[] = array(
+              'entity_type' => $entity_type,
+              'bundle' => $bundle,
+              'field_name' => $field_name,
+              'label' => $instance['settings']['fate_label'],
+              'contextual_link' => isset($instance['settings']['fate_contextual_link']) ? $instance['settings']['fate_contextual_link'] : FALSE,
+            );
+          }
+        }
+      }
+    }
+    
+  }
+
+  return $fields;
+}
+
+
+/**
+ * Menu access callback.
+ *
+ * Verify the field exists in this entity, and that the user has permission
+ * to edit it.
+ */
+function fate_check_access($entity_type, $entity, $field_name) {
+  // Must have a field name.
+  if (empty($field_name)) {
+    return FALSE;
+  }
+
+  // Make sure we know the full details of the entity.
+  list($entity_id, $revision_id, $bundle) = entity_extract_ids($entity_type, $entity);
+
+  // Extra some field settings, etc.
+  $params = array(
+    'field_name' => $field_name,
+    'entity_type' => $entity_type,
+    'bundle' => $bundle,
+  );
+  $instances = field_read_instances($params);
+  $instance = array_pop($instances);
+
+  // If the field doesn't exist, nothing to gain access to.
+  if (empty($instance)) {
+    return FALSE;
+  }
+
+  // Bail early if the user does not have the custom FATE access.
+  if (!user_access('use fate')) {
+    return FALSE;
+  }
+
+  // Ensure access to update the entity is granted.
+  if (!entity_access('update', $entity_type, $entity)) {
+    return FALSE;
+  }
+
+  // Ensure access to actually update this particular field is granted.
+  $field = field_info_field($field_name);
+  if (!field_access('edit', $field, $entity_type, $entity)) {
+    return FALSE;
+  }
+
+  // Check if an 'ENTITY_edit_access' function exists.
+  $function = $entity_type . '_edit_access';
+  if (function_exists($function)) {
+    // If the function exists, check if the user has access.
+    return $function($entity);
+  }
+
+  // Check if an 'ENTITY_access' function exists. Don't check user_access()
+  // because that's for something else.
+  $function = $entity_type . '_access';
+  if ($function != 'user_access' && function_exists($function)) {
+    // If the function exists, check if the user has access.
+    return $function('update', $entity);
+  }
+
+  // If we get this far, the user has permission.
+  return TRUE;
+}
+
+/**
+ * Implements hook_admin_paths().
+ */
+function fate_admin_paths() {
+  $items = array();
+  foreach (fate_menu() as $path => $menu) {
+    $path = str_replace('%node', '*', $path);
+    $items[$path] = TRUE;
+  }
+  return $items;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Add the FATE checkbox to entityreference fields.
+ */
+function fate_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+  $entity_type = $instance['entity_type'];
+
+  // Build a list of view modes that are suitable.
+  $form['instance']['settings']['fate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable custom edit tab'),
+    '#description' => t("This adds custom page that provides an alternative mechanism for editing this field on its own."),
+    '#default_value' => isset($instance['settings']['fate']) ? $instance['settings']['fate'] : FALSE,
+    // Display just after the 'required' checkbox.
+    '#weight' => $form['instance']['required']['#weight'] + 0.1,
+  );
+  $form['instance']['settings']['fate_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label for the custom edit tab'),
+    '#description' => t("Control the name of the new tab."),
+    '#default_value' => !empty($instance['settings']['fate_label']) ? $instance['settings']['fate_label'] : t('Edit @field', array('@field' => $instance['label'])),
+    // Display just after the 'required' checkbox.
+    '#weight' => $form['instance']['required']['#weight'] + 0.2,
+    '#states' => array(
+      'invisible' => array(
+       ':input[name="instance[settings][fate]"]' => array('checked' => FALSE),
+      ),
+    ),
+  );
+  $form['instance']['settings']['fate_contextual_link'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable contextual link'),
+    '#description' => t("Add a contextual link to edit this field"),
+    '#default_value' => isset($instance['settings']['fate_contextual_link']) ? $instance['settings']['fate_contextual_link'] : FALSE,
+    // Display just after the 'fate_label' textfield.
+    '#weight' => $form['instance']['required']['#weight'] + 0.3,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][fate]"]' => array('checked' => FALSE),
+      ),
+    ),
+  );
+  $form['#submit'][] = 'fate_form_field_ui_field_edit_form_submit';
+
+}
+
+/**
+ * Form submit callback for fate_form_field_ui_field_edit_form_alter().
+ *
+ * Rebuild the menus so the new tabs show up.
+ */
+function fate_form_field_ui_field_edit_form_submit($form, &$form_state) {
+  variable_set('menu_rebuild_needed', TRUE);
+}
