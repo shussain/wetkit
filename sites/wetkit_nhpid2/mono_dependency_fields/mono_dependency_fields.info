@@ -1,0 +1,11 @@
+name = Mono dependency fields
+core = 7.x
+package = Features
+dependencies[] = features
+dependencies[] = list
+features[features_api][] = api:2
+features[field_base][] = field_dose_dependency
+features[field_base][] = field_duration_dependency
+features[field_base][] = field_for_use_dependency
+features[field_base][] = field_risk_dependency
+features[field_base][] = field_use_dependency
