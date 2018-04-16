@@ -1,0 +1,148 @@
+<?php
+
+class CtoolsContextKeywordsSubstitutionTestCase extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Keywords substitution',
+      'description' => 'Verify that keywords are properly replaced with data.',
+      'group' => 'ctools',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp('ctools');
+
+    ctools_include('context');
+  }
+
+  public function testKeywordsSubstitution() {
+    // Create node context for substitution.
+    $node = $this->drupalCreateNode();
+    $context = ctools_context_create('node', $node);
+    $contexts = array('argument_1' => $context);
+
+    // Run tests on some edge cases.
+    $checks = array(
+      array(
+        '%node:changed:raw:',
+        array('%title' => ''),
+        "{$node->changed}:",
+        t('Multi-level token has been replaced. Colon left untouched.'),
+      ),
+      array(
+        '%node:title',
+        array('%title' => ''),
+        "{$node->title}",
+        t('Keyword and converter have been replaced.'),
+      ),
+      array(
+        '%%node:title',
+        array('%title' => ''),
+        "%node:title",
+        t('Keyword after escaped percent sign left untouched.'),
+      ),
+      array(
+        '%node:title%node:nid',
+        array('%title' => ''),
+        "{$node->title}{$node->nid}",
+        t('Multiple substitutions have been replaced.'),
+      ),
+      array(
+        '%node:title:',
+        array('%title' => ''),
+        "{$node->title}:",
+        t('Colon after keyword and converter left untouched.'),
+      ),
+      array(
+        '%node:title%%',
+        array('%title' => ''),
+        "{$node->title}%",
+        t('Escaped percent sign after keyword and converter left untouched.'),
+      ),
+      array(
+        '%%%node:title',
+        array('%title' => ''),
+        "%{$node->title}",
+        t('Keyword after escaped and unescaped percent sign has been replaced.'),
+      ),
+      array(
+        '%%foo:bar',
+        array('%title' => ''),
+        "%foo:bar",
+        t('Non-existant context ignored.'),
+      ),
+      array(
+        'There was about 20%-30% difference in price.',
+        array('%title' => ''),
+        'There was about 20%-30% difference in price.',
+        t('Non-keyword percent sign left untouched.'),
+      ),
+      array(
+        'href="my%20file%2dname.pdf"',
+        array('%title' => ''),
+        'href="my%20file%2dname.pdf"',
+        t('HTTP URL escape left untouched.'),
+      ),
+      array(
+        'href="my%a0file%fdname.pdf"',
+        array('%title' => ''),
+        'href="my%a0file%fdname.pdf"',
+        t('HTTP URL escape (high-chars) left untouched.'),
+      ),
+      array(
+        '<a href="http://www.example.com/here%20is%20a%20pdf.pdf">Click here!</a>',
+        array('%title' => ''),
+        '<a href="http://www.example.com/here%20is%20a%20pdf.pdf">Click here!</a>',
+        t('HTTP URL escape percent sign left untouched in HTML.'),
+      ),
+      array(
+        'SELECT * FROM {table} WHERE field = "%s"',
+        array('%title' => ''),
+        'SELECT * FROM {table} WHERE field = "%s"',
+        t('SQL percent sign left untouched.'),
+      ),
+      array(
+        '%title',
+        array('%title' => 'foobar'),
+        'foobar',
+        t('String value in $keywords array is returned.'),
+      ),
+      array(
+        '%title',
+        array('%title' => ''),
+        '',
+        t('Empty string value in $keywords array returns empty string.'),
+      ),
+      array(
+        '%title',
+        array('%title' => NULL),
+        '',
+        t('NULL value in $keywords array returns empty string.'),
+      ),
+      array(
+        '%title',
+        array('%title' => FALSE),
+        '',
+        t('FALSE value in $keywords array returns empty string.'),
+      ),
+      array(
+        '%title',
+        array('%title' => 11),
+        '11',
+        t('Integer value in $keywords array returns string representation of the integer.'),
+      ),
+      array(
+        '%title',
+        array('%title' => 'substring %title'),
+        'substring %title',
+        t('Input value as substring in $keywords array left untouched.'),
+      ),
+    );
+    foreach ($checks as $check) {
+      list($string, $keywords, $expected_result, $message) = $check;
+      $actual_result = ctools_context_keyword_substitute($string, $keywords, $contexts);
+      $this->assertEqual($actual_result, $expected_result, $message);
+    }
+  }
+
+}
