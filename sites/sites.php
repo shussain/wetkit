@@ -56,12 +56,10 @@
 
 $sites = array();
 $domain= '10.158.46.206';
-//legal_opinion_demo
-$sites[$domain . '.legal_opinion_demo']='legal_opinion_demo';
 
 //legal_opinion
-$sites[$domain . '.legal_opinion']='legal_opinion';
-$sites[$domain . '.legal_opinion_demo']='legal_opinion_demo';
+$sites[$domain . '.legal_opinion']='wetkit_legal_opinion';
+$sites[$domain . '.legal_opinion_demo']='wetkit_legal_opinion_demo';
 
 
 //wetkit_tpd
