@@ -1,0 +1,16 @@
+name = NNHPD Search
+description = Provides advanced search functionality
+core = 7.x
+package = NHPID
+dependencies[] = ctools
+dependencies[] = facetapi
+dependencies[] = page_manager
+dependencies[] = search_api
+dependencies[] = views
+
+
+; Information added by Drupal.org packaging script on 2017-03-22
+
+core = "7.x"
+
+

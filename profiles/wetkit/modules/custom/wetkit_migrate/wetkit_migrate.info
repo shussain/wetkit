@@ -35,9 +35,8 @@ files[] = migrations/menu/migrate_mega_menu.inc
 files[] = migrations/menu/migrate_site_menu.inc
 files[] = migrations/taxonomy/migrate_taxonomy.inc
 
-; Information added by Drupal.org packaging script on 2016-11-23
-version = "7.x-4.5"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.6"
 core = "7.x"
 project = "wetkit_migrate"
-datestamp = "1479913451"
-
+datestamp = "1524182643"

@@ -5,11 +5,10 @@ core = 7.x
 
 ; Modules needed for Migration
 
-projects[migrate][version] = 2.8
+projects[migrate][version] = 2.9
 projects[migrate][type] = module
 projects[migrate][subdir] = contrib
 projects[migrate][patch][2290027] = http://drupal.org/files/issues/migrate_uuid_keep-2290027-02.patch
-projects[migrate][patch][2654222] = http://drupal.org/files/issues/migrate-php7-uniform-variable-syntax.patch
 
 projects[migrate_extras][version] = 2.5
 projects[migrate_extras][type] = module

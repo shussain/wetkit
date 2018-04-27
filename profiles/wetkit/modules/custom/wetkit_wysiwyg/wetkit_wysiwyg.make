@@ -9,14 +9,14 @@ projects[linkit][version] = 3.5
 projects[linkit][subdir] = contrib
 projects[linkit][patch][2381549] = http://drupal.org/files/issues/linkit_title_and_uuid-2381549-10.patch
 
-projects[wysiwyg][version] = 2.4
+projects[wysiwyg][version] = 2.5
 projects[wysiwyg][subdir] = contrib
 projects[wysiwyg][patch][1786732] = http://drupal.org/files/wysiwyg-arbitrary_image_paths_markitup-1786732-3.patch
 
 ; Include our Editors
 
 libraries[ckeditor][download][type] = get
-libraries[ckeditor][download][url] = http://download.cksource.com/CKEditor/CKEditor/CKEditor%204.3.5/ckeditor_4.3.5_standard.zip
+libraries[ckeditor][download][url] = http://download.cksource.com/CKEditor/CKEditor/CKEditor%204.9.2/ckeditor_4.9.2_standard.zip
 
 libraries[markitup][download][type] = get
 libraries[markitup][download][url] = https://github.com/markitup/1.x/tarball/master

@@ -419,8 +419,7 @@ function environment_indicator_get_active() {
 
   // 3. Check if the indicator is in the db cache.
   if ($cached_env = cache_get('environment_indicator')) {
-    $env = $cached_env->data;
-    return environment_indicator_alter_and_cache($env);
+    return $cached_env->data;
   }
 
   // 4. Load all the environments and match them to the current environment.
@@ -539,7 +538,7 @@ function _environment_indicator_regex_filter($item) {
  * Sort callback for environment_indicator_get_all().
  */
 function _environment_indicator_sort($a, $b) {
-  return $a->settings['weight'] - $b->settings['weight'];
+  return (int) $a->settings['weight'] - (int) $b->settings['weight'];
 }
 
 /**

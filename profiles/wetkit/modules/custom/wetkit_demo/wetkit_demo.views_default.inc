@@ -304,7 +304,6 @@ function wetkit_demo_views_default_views() {
   $handler->display->display_options['pager']['options']['items_per_page'] = '9';
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['style_plugin'] = 'views_bootstrap_grid_plugin_style';
-  $handler->display->display_options['style_options']['columns'] = '3';
   $handler->display->display_options['row_plugin'] = 'fields';
   /* Field: Field: Title */
   $handler->display->display_options['fields']['title_field']['id'] = 'title_field';

@@ -5,7 +5,7 @@ core = 7.x
 
 ; Modules
 
-projects[advanced_help][version] = 1.3
+projects[advanced_help][version] = 1.4
 projects[advanced_help][subdir] = contrib
 
 projects[apps][version] = 1.1
@@ -14,13 +14,11 @@ projects[apps][subdir] = contrib
 projects[better_formats][version] = 1.0-beta2
 projects[better_formats][subdir] = contrib
 
-projects[ctools][version] = 1.12
+projects[ctools][version] = 1.14
 projects[ctools][subdir] = contrib
 projects[ctools][patch][2399313] = http://drupal.org/files/issues/ctools-2399313-1-Relationship-optional-context.patch
-projects[ctools][patch][2401635] = http://drupal.org/files/issues/ctools-views-content-custom-url-1417630-06.patch
-projects[ctools][patch][2265451] = http://drupal.org/files/issues/hide_empty_page_title-2265451-13.patch
-projects[ctools][patch][2437773] = http://drupal.org/files/issues/attached_css_and_js-2437773-18.patch
-projects[ctools][patch][2830559] = http://drupal.org/files/issues/2830559-ctools-page-title-in-text-14.patch
+projects[ctools][patch][2401635] = https://www.drupal.org/files/issues/2018-04-16/ctools-views-content-custom-url-2401635-03.patch
+projects[ctools][patch][2437773] = https://www.drupal.org/files/issues/2018-04-16/ctools-attached_css_and_js_not_loaded-2437773-36.patch
 
 projects[date][version] = 2.10
 projects[date][subdir] = contrib
@@ -64,11 +62,10 @@ projects[field_collection][subdir] = contrib
 projects[field_collection][patch][2075325] = http://drupal.org/files/issues/field_collection_uuid-2075325-18.patch
 projects[field_collection][patch][2075326] = http://drupal.org/files/issues/field_collection_uuid_services-2075325-18.patch
 
-projects[field_group][version] = 1.5
+projects[field_group][version] = 1.6
 projects[field_group][subdir] = contrib
-projects[field_group][patch][2649648] = http://drupal.org/files/issues/php7_uniform_variable-2649648-5.patch
 
-projects[fontawesome][version] = 2.6
+projects[fontawesome][version] = 2.8
 projects[fontawesome][subdir] = contrib
 projects[fontawesome][patch][2590491] = http://drupal.org/files/issues/wetkit_core-2590491-6.patch
 
@@ -98,7 +95,7 @@ projects[menu_block][patch][2567875] = http://drupal.org/files/issues/argument_3
 projects[menu_block][patch][2282933] = http://drupal.org/files/issues/menu_block-uuid-2282933-23.patch
 projects[menu_block][patch][2644630] = http://drupal.org/files/issues/menu_block_block-2644630-2.patch
 
-projects[password_policy][version] = 1.14
+projects[password_policy][version] = 1.15
 projects[password_policy][subdir] = contrib
 
 projects[panelizer][version] = 3.4
@@ -114,7 +111,7 @@ projects[panels][patch][2253919] = http://drupal.org/files/issues/the_uuids_of_c
 projects[panels][patch][2508433] = http://drupal.org/files/issues/blocks_dont_support_optional_context-2508433-1.patch
 projects[panels][patch][2856088] = http://drupal.org/files/issues/panels_3_9_code_cleanup-2856088-5.patch
 
-projects[panopoly_magic][version] = 1.46
+projects[panopoly_magic][version] = 1.51
 projects[panopoly_magic][subdir] = contrib
 projects[panopoly_magic][patch][2179413] = http://drupal.org/files/issues/panels_undefined_styles-2179413-13.patch
 
@@ -161,18 +158,16 @@ projects[uuid_link][subdir] = contrib
 projects[uuid_link][patch][2101455] = http://drupal.org/files/uuid_link_entity_translation-2101455-9.patch
 projects[uuid_link][patch][2484927] = http://drupal.org/files/issues/linkit_uuid-2484927-8.patch
 
-projects[views][version] = 3.17
+projects[views][version] = 3.20
 projects[views][subdir] = contrib
 projects[views][patch][1189550] = http://drupal.org/files/issues/views_1189550_escape_rss_feed_title.patch
-projects[views][patch][1331056] = http://drupal.org/files/issues/views-3.x-dev-issue_1331056-52.patch
 projects[views][patch][1863358] = http://drupal.org/files/1863358-grid-format-striping-8.patch
-projects[views][patch][2037469] = http://drupal.org/files/views-exposed-sorts-2037469-1.patch
-projects[views][patch][2071607] = http://drupal.org/files/issues/saving_a_view_causes-2071607-17.patch
+projects[views][patch][2037469] = https://www.drupal.org/files/issues/views-exposed-sorts-2037469-26.patch
 
 projects[views_autocomplete_filters][version] = 1.2
 projects[views_autocomplete_filters][subdir] = contrib
 
-projects[views_bootstrap][version] = 3.1
+projects[views_bootstrap][version] = 3.2
 projects[views_bootstrap][subdir] = contrib
 
 projects[views_bulk_operations][version] = 3.4

@@ -41,7 +41,7 @@ function wetkit_wysiwyg_wysiwyg_default_profiles() {
       'css_classes' => '',
     ),
     'preferences' => array(
-      'add_to_summaries' => NULL,
+      'add_to_summaries' => FALSE,
       'default' => NULL,
       'show_toggle' => NULL,
       'user_choose' => NULL,
@@ -55,8 +55,6 @@ function wetkit_wysiwyg_wysiwyg_default_profiles() {
     'format' => 'wetkit_wysiwyg_text',
     'editor' => 'ckeditor',
     'settings' => array(
-      'theme' => 'advanced',
-      'language' => 'en',
       'buttons' => array(
         'default' => array(
           'Bold' => 1,
@@ -108,6 +106,8 @@ function wetkit_wysiwyg_wysiwyg_default_profiles() {
           'media' => 1,
         ),
       ),
+      'theme' => 'advanced',
+      'language' => 'en',
       'toolbarLocation' => 'top',
       'resize_enabled' => 1,
       'default_toolbar_grouping' => 1,
@@ -115,6 +115,7 @@ function wetkit_wysiwyg_wysiwyg_default_profiles() {
       'acf_mode' => 0,
       'acf_allowed_content' => '',
       'css_setting' => 'self',
+      'css_theme' => 'wetkit_bootstrap',
       'css_path' => '',
       'stylesSet' => 'alert-info=div.alert alert-info
 alert-success=div.alert alert-success
@@ -122,15 +123,16 @@ alert-warning=div.alert alert-warning
 alert-danger=div.alert alert-danger
 badge=span.badge',
       'block_formats' => 'h1,h2,h3,h4,h5,h6',
-      'advanced__active_tab' => 'edit-basic',
       'forcePasteAsPlainText' => 0,
+      'pasteFromWordPromptCleanup' => 0,
+      'pasteFromWordRemoveFontStyles' => 0,
     ),
     'preferences' => array(
-      'add_to_summaries' => NULL,
-      'default' => NULL,
-      'show_toggle' => NULL,
-      'user_choose' => NULL,
-      'version' => '4.3.5.61fd4ff',
+      'default' => 1,
+      'user_choose' => 0,
+      'show_toggle' => 0,
+      'add_to_summaries' => 0,
+      'version' => '4.9.2.95e5d83',
     ),
     'name' => 'formatwetkit_wysiwyg_text',
   );

@@ -68,9 +68,8 @@ features_exclude[field_instance][node-deploy_content_moderated-field_shared_cont
 features_exclude[field_instance][node-deploy_content_moderated-field_deploy_to_destination_site] = node-deploy_content_moderated-field_deploy_to_destination_site
 features_exclude[field_instance][taxonomy_term-tags-field_shared_content] = taxonomy_term-tags-field_shared_content
 
-; Information added by Drupal.org packaging script on 2017-08-22
-version = "7.x-4.17"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.18"
 core = "7.x"
 project = "wetkit_deployment"
-datestamp = "1503408848"
-
+datestamp = "1524182620"

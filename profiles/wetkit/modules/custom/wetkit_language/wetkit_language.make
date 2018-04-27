@@ -5,7 +5,7 @@ core = 7.x
 
 ; Contrib
 
-projects[entity_translation][version] = 1.0-beta6
+projects[entity_translation][version] = 1.0
 projects[entity_translation][subdir] = contrib
 projects[entity_translation][patch][2557429] = http://drupal.org/files/issues/static_cache_for-2557429-17.patch
 projects[entity_translation][patch][2734295] = http://drupal.org/files/issues/entity_translation-2734295-4.patch
@@ -13,7 +13,7 @@ projects[entity_translation][patch][2734295] = http://drupal.org/files/issues/en
 projects[features_translations][version] = 2.0
 projects[features_translations][subdir] = contrib
 
-projects[i18n][version] = 1.18
+projects[i18n][version] = 1.22
 projects[i18n][subdir] = contrib
 
 projects[i18nviews][version] = 3.0-alpha1

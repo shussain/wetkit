@@ -89,9 +89,8 @@ features[views_view][] = deployment_administration_nodes
 features[views_view][] = deployment_administration_taxonomy
 features[views_view][] = deployment_administration_users
 
-; Information added by Drupal.org packaging script on 2017-08-22
-version = "7.x-4.17"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.18"
 core = "7.x"
 project = "wetkit_deployment"
-datestamp = "1503408848"
-
+datestamp = "1524182620"

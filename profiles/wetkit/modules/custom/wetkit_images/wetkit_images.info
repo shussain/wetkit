@@ -59,9 +59,8 @@ features[image][] = wetkit_image_wide
 features[variable][] = picture_ckeditor_groups
 features[variable][] = picture_ckeditor_label
 
-; Information added by Drupal.org packaging script on 2016-07-08
-version = "7.x-4.5"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.6"
 core = "7.x"
 project = "wetkit_images"
-datestamp = "1467939262"
-
+datestamp = "1524182606"

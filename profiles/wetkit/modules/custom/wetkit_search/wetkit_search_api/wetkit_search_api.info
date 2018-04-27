@@ -59,9 +59,8 @@ features[variable][] = search_api_facets_search_ids
 features[views_view][] = wetkit_database_search
 features[views_view][] = wetkit_search_api
 
-; Information added by Drupal.org packaging script on 2017-06-23
-version = "7.x-4.4"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.5"
 core = "7.x"
 project = "wetkit_search"
-datestamp = "1498240144"
-
+datestamp = "1524182652"

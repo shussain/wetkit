@@ -64,9 +64,8 @@ stylesheets[all][] = css/wetkit.css
 variables[password_policy_show_restrictions] = 1
 variables[password_policy_new_login_change] = 0
 
-; Information added by Drupal.org packaging script on 2018-03-28
-version = "7.x-4.21"
+; Information added by Drupal.org packaging script on 2018-04-25
+version = "7.x-4.24"
 core = "7.x"
 project = "wetkit"
-datestamp = "1522269790"
-
+datestamp = "1524697691"

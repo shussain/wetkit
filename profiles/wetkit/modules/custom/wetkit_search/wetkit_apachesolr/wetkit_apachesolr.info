@@ -37,9 +37,8 @@ features[features_api][] = api:2
 files[] = plugins/facetapi/url_processor_wetkit_apachesolr.inc
 hidden = TRUE
 
-; Information added by Drupal.org packaging script on 2017-06-23
-version = "7.x-4.4"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.5"
 core = "7.x"
 project = "wetkit_search"
-datestamp = "1498240144"
-
+datestamp = "1524182652"

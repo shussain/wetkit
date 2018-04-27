@@ -51,9 +51,8 @@ features[services_endpoint][] = destination_site_endpoint
 features[variable][] = uuid_redirect_external_base_url
 features[variable][] = uuid_redirect_menu_paths
 
-; Information added by Drupal.org packaging script on 2017-08-22
-version = "7.x-4.17"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.18"
 core = "7.x"
 project = "wetkit_deployment"
-datestamp = "1503408848"
-
+datestamp = "1524182620"

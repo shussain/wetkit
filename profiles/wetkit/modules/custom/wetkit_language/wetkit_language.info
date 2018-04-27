@@ -68,9 +68,8 @@ features[variable][] = pathauto_node_wetkit_page_und_pattern
 features[variable][] = translation_language_type
 features[variable][] = variable_realm_list_language
 
-; Information added by Drupal.org packaging script on 2017-06-26
-version = "7.x-4.12"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.13"
 core = "7.x"
 project = "wetkit_language"
-datestamp = "1498482847"
-
+datestamp = "1524182610"

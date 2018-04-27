@@ -34,9 +34,8 @@ projects[entity_menu_links][subdir] = contrib
 projects[entity_menu_links][patch][2622230] = http://drupal.org/files/issues/entity_menu_links-sqlsrv_PDOException_keyword-2622230-2.patch
 projects[entity_menu_links][patch][2723471] = http://drupal.org/files/issues/megamenu_system_path-2723471-11.patch
 
-projects[environment_indicator][version] = 2.8
+projects[environment_indicator][version] = 2.9
 projects[environment_indicator][subdir] = contrib
-projects[environment_indicator][patch][2207897] = http://drupal.org/files/issues/environment_indicator-2207897-9.patch
 
 projects[quicktabs][version] = 3.8
 projects[quicktabs][subdir] = contrib

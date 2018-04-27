@@ -73,7 +73,7 @@ $sites[$domain . '.wetkit_ac']='wetkit_ac';
 //nhpid
 $sites[$domain . '.old_nhpid']='old_nhpid';
 $sites[$domain . '.wetkit_nhpid']='wetkit_nhpid';
-$sites[$domain . '.wetkit_nhpid_demo']='wetkit_nhpid_demo';
+$sites[$domain . '.wetkit_nhpid2']='wetkit_nhpid2';
 
 //nnhpd_hr
 $sites[$domain . '.wetkit_nnhpd_hr']='wetkit_nnhpd_hr';

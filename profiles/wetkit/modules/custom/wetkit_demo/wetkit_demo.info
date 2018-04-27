@@ -21,9 +21,8 @@ features[variable][] = site_frontpage
 features[views_view][] = wetkit_demo
 features[views_view][] = wxt_theme
 
-; Information added by Drupal.org packaging script on 2016-10-27
-version = "7.x-4.3"
+; Information added by Drupal.org packaging script on 2018-04-17
+version = "7.x-4.4"
 core = "7.x"
 project = "wetkit_demo"
-datestamp = "1477609770"
-
+datestamp = "1523926409"

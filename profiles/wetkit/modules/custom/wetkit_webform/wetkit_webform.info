@@ -58,9 +58,8 @@ features[variable][] = webform_node_webform
 features[variable][] = webform_node_wetkit_page
 features[variable][] = workbench_moderation_default_state_webform
 
-; Information added by Drupal.org packaging script on 2017-06-23
-version = "7.x-4.14"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.15"
 core = "7.x"
 project = "wetkit_webform"
-datestamp = "1498239553"
-
+datestamp = "1524182661"

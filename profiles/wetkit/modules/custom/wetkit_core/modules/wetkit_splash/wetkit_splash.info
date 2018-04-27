@@ -20,9 +20,8 @@ features[variable][] = splashify_where_desktop_listpages
 features[variable][] = splashify_where_desktop_opposite
 features[variable][] = splashify_where_desktop_page
 
-; Information added by Drupal.org packaging script on 2018-02-19
-version = "7.x-4.17"
+; Information added by Drupal.org packaging script on 2018-04-20
+version = "7.x-4.22"
 core = "7.x"
 project = "wetkit_core"
-datestamp = "1519056188"
-
+datestamp = "1524185294"
