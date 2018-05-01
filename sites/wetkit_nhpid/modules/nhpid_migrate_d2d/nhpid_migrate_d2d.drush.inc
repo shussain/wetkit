@@ -13,6 +13,7 @@ function nhpid_migrate_d2d_drush_command() {
 	  'operation' => 'clear-only, import-only, clear-and-import. Default:import-only',
 	  'update' =>'Process updating all imported items. Effective only for imports.',
 	  'groups' =>'Comma delimited group names',
+	  'batch_size'=>'Integer, the number of records to be processed in one batch. Default: 1000',
     ),
     'examples' => array(
       'drush ndm --operation=clear-only' => 'Clear NHPID Data nodes only.',
@@ -31,6 +32,7 @@ function drush_nhpid_migrate_d2d_nhpid_dms_migrate(){
     
   // Option
   $operation = drush_get_option('operation', 'import-only');
+  $batch_size = drush_get_option('batch_size', '1000');
   //print_r($operation);
   $groups=array(
       'nhpid_group_1' => 1,
@@ -87,7 +89,7 @@ function drush_nhpid_migrate_d2d_nhpid_dms_migrate(){
 		}
 	  //case 'clear-and-import':
 	  case 'import-only':
-		print_r($operation);
+		//print_r($operation);
 		asort($groups);
 		foreach($groups as $group=>$weight){
 			print_r(t("Migrating @group...\n", array('@group'=>$group)));
@@ -96,22 +98,71 @@ function drush_nhpid_migrate_d2d_nhpid_dms_migrate(){
 					$migration=$migrations[$migrate];
 					drush_invoke_process('@self', 'migrate-reset-status', array($migrate));
 					if (drush_get_option('update')){
-						drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'feedback'=>'100 seconds'));
+						//drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'feedback'=>'100 seconds'));
+						/*
 						if (method_exists($migration, 'getUnprocessedAndNeedsUpdateIds')){
 							while ($migration->getUnprocessedAndNeedsUpdateIds()){
-								$idlist=implode(',', $migration->getNeedsUpdateIds());
-								drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'idlist' =>$idlist, 'feedback'=>'100 seconds'));
+								$unprocessed_ids = $migration->getUnprocessedAndNeedsUpdateIds();
+								$ids_chunks=array_chunk($unprocessed_ids, 1000);
+								foreach ($ids_chunks as $ids_chunk){
+									$idlist=implode(',', $ids_chunk);
+									drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'idlist' =>$idlist, 'feedback'=>'100 seconds'));
+								}
 							}
+						}
+						*/
+						if (method_exists($migration, 'getSourceIds')){
+							$unprocessed_ids = $migration->getSourceIds();
+							$unprocessed = count($unprocessed_ids);
+							$processed = 0;
+							$ids_chunks=array_chunk($unprocessed_ids, $batch_size);
+							foreach ($ids_chunks as $ids_chunk){
+								$idlist=implode(',', $ids_chunk);
+								drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'idlist' =>$idlist, 'feedback'=>'100 seconds'));
+								$processed = $processed + count($ids_chunk);
+								$remaining = $unprocessed_ids - $processed;
+								print_r("Total: $unprocessed. Processed: $processed. Remaining: $remaining\n");
+							}
+							
+						}
+						else{
+							drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'feedback'=>'100 seconds'));
 						}
 					}
 					else{
-						drush_invoke_process('@self', 'migrate-import', array($migrate), array('feedback'=>'100 seconds'));
+						//drush_invoke_process('@self', 'migrate-import', array($migrate), array('feedback'=>'100 seconds'));
+						//print_r("not updating\n");
+						/*
 						if (method_exists($migration, 'getUnprocessedIds')){
 							while ($migration->getUnprocessedIds()){
-								$idlist=implode(',', $migration->getUnprocessedIds());
-								//print_r($idlist);
-								drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'idlist' =>$idlist, 'feedback'=>'100 seconds'));
+								$unprocessed_ids = $migration->getUnprocessedIds();
+								$ids_chunks=array_chunk($unprocessed_ids, 1000);
+								foreach ($ids_chunks as $ids_chunk){
+									$idlist=implode(',', $ids_chunk);
+									//print_r($idlist);
+									drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True,'idlist' =>$idlist, 'feedback'=>'100 seconds'));
+								}
+								
 							}
+						}
+						*/
+						if (method_exists($migration, 'getSourceIds')){
+							$unprocessed_ids = $migration->getSourceIds();
+							$unprocessed = count($unprocessed_ids);
+							$ids_chunks=array_chunk($unprocessed_ids, $batch_size);
+							$processed = 0;
+							//print_r($batch_size);
+							foreach ($ids_chunks as $ids_chunk){
+								$idlist=implode(',', $ids_chunk);
+								//print_r($idlist);
+								drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True,'idlist' =>$idlist, 'feedback'=>'100 seconds'));
+								$processed = $processed + count($ids_chunk);
+								$remaining = $unprocessed - $processed;
+								print_r("Total: $unprocessed. Processed: $processed. Remaining: $remaining\n");
+							}
+						}
+						else{
+							drush_invoke_process('@self', 'migrate-import', array($migrate), array('feedback'=>'100 seconds'));
 						}
 					}
 					

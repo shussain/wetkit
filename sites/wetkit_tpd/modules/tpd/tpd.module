@@ -133,7 +133,7 @@ function tpd_permission() {
 /**
  * Implementation of hook_form_FORM_ID_alter
  */
-function tpd_form_node_form_alter(&$form, &$form_state, $form_id){
+function tpd_form_node_form_alter_(&$form, &$form_state, $form_id){
   //drupal_set_message(nhpid_api_dump($user, 'green', TRUE));
 	//drupal_set_message(nhpid_api_dump($form, 'green', TRUE));
   // *** Add javascript alert to remind user to update workflow state ****

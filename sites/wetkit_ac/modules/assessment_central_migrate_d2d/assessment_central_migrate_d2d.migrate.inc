@@ -147,7 +147,7 @@ function assessment_central_migrate_d2d_migrate_api() {
   );
 
   // Tell the node migrations where the users are coming from, so they can
-  // set up the dependency and resolve D6->D7 uids.
+  // set up the dependency and resolve uids.
   $common_node_arguments = $common_arguments + array(
       'user_migration' => 'User_2'
     );

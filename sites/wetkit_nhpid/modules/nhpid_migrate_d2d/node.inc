@@ -47,6 +47,12 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		elseif ($field_name == 'field_preparation_code'){
 			$this->addFieldMapping('field_preparation_code', 'preparation_code');
 		}
+		/***
+		 The migrate module somehow interprete field_title as node title field. It maps is as field_data_field_title0. The mapping of this field has to be skipped. The field data is added in complete().
+		***/
+		elseif ($field_name == 'field_title'){
+			//$this->addFieldMapping('field_title', 'field_title');
+		}
 		else{
 			$this->addFieldMapping($field_name, $field_name);
 		}
@@ -62,6 +68,17 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		$entity->uid=$row->uid;
 		//print_r ('new_uid: ' . $entity->uid . "\n");
 	}
+	/***
+	 The migrate module somehow interprete field_title as node title field. It maps is as field_data_field_title0. The mapping of this field is skipped (see function __construct). The following code added the field data back.
+	***/
+	if($row->field_title){
+		$field_title=array();
+		foreach($row->field_title as $value){
+			$field_title[$row->language][]=['value'=>$value];
+		}
+		$entity->field_title=$field_title;
+	}
+	node_save($entity);
 	print_r($row->title . " is migrated \n");
 	// Run garbage collector to further reduce memory.
 	$this->row_counter ++;
@@ -70,6 +87,7 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		gc_collect_cycles();
 		//print_r('GC run\n');
 	}
+	//print_r($entity);
   }
    /**
    * Implementation of Migration::prepareRow().
@@ -117,6 +135,7 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		if ($field_name == 'field_its_ids'){
 			$this->set_ao_its_nid($row);
 		}
+		
 		// Some legacy vales of field_fema_number is not numeric.
 		if ($field_name == 'field_fema_number'){
 			if ($row->field_fema_number){
