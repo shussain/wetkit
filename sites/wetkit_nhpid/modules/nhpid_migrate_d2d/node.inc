@@ -77,8 +77,9 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 			$field_title[$row->language][]=['value'=>$value];
 		}
 		$entity->field_title=$field_title;
+		node_save($entity);
 	}
-	node_save($entity);
+	
 	print_r($row->title . " is migrated \n");
 	// Run garbage collector to further reduce memory.
 	$this->row_counter ++;
