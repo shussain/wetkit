@@ -105,7 +105,7 @@ function drush_assessment_central_migrate_d2d_assessment_central_migrate(){
 								$idlist=implode(',', $ids_chunk);
 								drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'idlist' =>$idlist, 'feedback'=>'100 seconds'));
 								$processed = $processed + count($ids_chunk);
-								$remaining = $unprocessed_ids - $processed;
+								$remaining = $unprocessed - $processed;
 								print_r("Total: $unprocessed. Processed: $processed. Remaining: $remaining\n");
 							}
 							
