@@ -13,6 +13,7 @@ function assessment_central_migrate_d2d_drush_command() {
 	  'operation' => 'clear-only, import-only, clear-and-import. Default:import-only',
 	  'update'=>'Process updating all imported items. Effective only for imports.',
 	  'batch_size'=>'Integer, the number of records to be processed in one batch. Default: 1000',
+	  'memory_limit'=>'Drupal memory limit, like 860M, 2G, etc. Default: 1024M',
     ),
     'examples' => array(
       'drush acm --operation=clear-only' => 'Clear NHPID Data nodes only.',
@@ -32,6 +33,10 @@ function drush_assessment_central_migrate_d2d_assessment_central_migrate(){
   // Option
   $operation = drush_get_option('operation', 'import-only');
   $batch_size = drush_get_option('batch_size', '1000');
+  $memory_limit=drush_get_option('memory_limit', '1024M');
+  if(!drupal_check_memory_limit($memory_limit)){
+	  ini_set('memory_limit', $memory_limit);
+  }
   // 
   $migrates=array(
       'Role_1' => 1,
