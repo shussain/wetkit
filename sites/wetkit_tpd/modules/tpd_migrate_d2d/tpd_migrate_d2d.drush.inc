@@ -94,19 +94,22 @@ function drush_tpd_migrate_d2d_tpd_migrate(){
 				}
 				*/
 				if (method_exists($migration, 'getSourceIds')){
-							$unprocessed_ids = $migration->getSourceIds();
-							$unprocessed = count($unprocessed_ids);
-							$processed = 0;
-							$ids_chunks=array_chunk($unprocessed_ids, $batch_size);
-							foreach ($ids_chunks as $ids_chunk){
-								$idlist=implode(',', $ids_chunk);
-								drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'idlist' =>$idlist, 'feedback'=>'100 seconds'));
-								$processed = $processed + count($ids_chunk);
-								$remaining = $unprocessed - $processed;
-								print_r("Total: $unprocessed. Processed: $processed. Remaining: $remaining\n");
-							}
-							
-						}
+					$unprocessed_ids = $migration->getSourceIds();
+					$unprocessed = count($unprocessed_ids);
+					$processed = 0;
+					$ids_chunks=array_chunk($unprocessed_ids, $batch_size);
+					foreach ($ids_chunks as $ids_chunk){
+						$idlist=implode(',', $ids_chunk);
+						drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'idlist' =>$idlist, 'feedback'=>'100 seconds'));
+						$processed = $processed + count($ids_chunk);
+						$remaining = $unprocessed - $processed;
+						print_r("Total: $unprocessed. Processed: $processed. Remaining: $remaining\n");
+					}
+					
+				}
+				else{
+					drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'feedback'=>'100 seconds'));
+				}
 			}
 			else{
 				/*
@@ -120,20 +123,23 @@ function drush_tpd_migrate_d2d_tpd_migrate(){
 				}
 				*/
 				if (method_exists($migration, 'getSourceIds')){
-							$unprocessed_ids = $migration->getSourceIds();
-							$unprocessed = count($unprocessed_ids);
-							$ids_chunks=array_chunk($unprocessed_ids, $batch_size);
-							$processed = 0;
-							//print_r($batch_size);
-							foreach ($ids_chunks as $ids_chunk){
-								$idlist=implode(',', $ids_chunk);
-								//print_r($idlist);
-								drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True,'idlist' =>$idlist, 'feedback'=>'100 seconds'));
-								$processed = $processed + count($ids_chunk);
-								$remaining = $unprocessed - $processed;
-								print_r("Total: $unprocessed. Processed: $processed. Remaining: $remaining\n");
-							}
-						}
+					$unprocessed_ids = $migration->getSourceIds();
+					$unprocessed = count($unprocessed_ids);
+					$ids_chunks=array_chunk($unprocessed_ids, $batch_size);
+					$processed = 0;
+					//print_r($batch_size);
+					foreach ($ids_chunks as $ids_chunk){
+						$idlist=implode(',', $ids_chunk);
+						//print_r($idlist);
+						drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True,'idlist' =>$idlist, 'feedback'=>'100 seconds'));
+						$processed = $processed + count($ids_chunk);
+						$remaining = $unprocessed - $processed;
+						print_r("Total: $unprocessed. Processed: $processed. Remaining: $remaining\n");
+					}
+				}
+				else{
+					drush_invoke_process('@self', 'migrate-import', array($migrate), array('feedback'=>'100 seconds'));
+				}
 			}
 			print_r(t("Migrating @migrate is processed once.\n", array('@migrate'=>$migrate)));
 			
