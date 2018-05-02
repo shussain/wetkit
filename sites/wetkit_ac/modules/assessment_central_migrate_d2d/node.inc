@@ -497,16 +497,18 @@ class ACMIMigration extends ACNodeMigration {
 	// field_mi_nhpid_name
 	$ingredient_name_e = $row -> field_mi_nhpid_name;
 	$target_ids = array();
-	foreach($ingredient_name_e as $ingredient_name){
-		$target_id = $this->get_new_nhpid_ingredient_entity_id($ingredient_name);
-		if ($target_id ){
-			$target_ids[]=$target_id;
+	if (is_array($ingredient_name_e)){
+		foreach($ingredient_name_e as $ingredient_name){
+			$target_id = $this->get_new_nhpid_ingredient_entity_id($ingredient_name);
+			if ($target_id ){
+				$target_ids[]=$target_id;
+			}
+			else{
+				$this->saveMessage(t('No target id found for NHPID name !name', array('!name' => $ingredient_name)));
+			}
 		}
-		else{
-			$this->saveMessage(t('No target id found for NHPID name !name', array('!name' => $ingredient_name)));
-		}
-	}
-	$row->field_mi_nhpid_name = $target_ids;
+		$row->field_mi_nhpid_name = $target_ids;
+   }
 	//print_r($row->field_mi_nhpid_name);
 	//print_r($row->{'field_current_tp_status:entity_id'});
 	
