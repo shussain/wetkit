@@ -95,6 +95,37 @@ abstract class ACNodeMigration extends DrupalNode7Migration {
 	}  
 	return null;
   }
+  
+  public function get_new_sid($legacy_nid){
+	  $workflow_row = Database::getConnection('legacy', $this->sourceConnection)
+                 ->select('workflow_node', 'wd')
+                 ->fields('wd', array('nid', 'sid', 'uid', 'stamp'))
+				 ->condition('nid', $legacy_nid)
+                 ->execute()
+                 ->fetchObject();
+	//print_r($workflow_row);
+
+    if ($workflow_row ) {
+       $old_sid = $workflow_row->sid;
+	   $workflow_state = Database::getConnection('legacy', $this->sourceConnection)
+                 ->select('workflow_states', 'ws')
+                 ->fields('ws', array('wid', 'sid', 'state'))
+				 ->condition('sid', $old_sid)
+                 ->execute()
+                 ->fetchObject();
+		$state = $workflow_state->state;
+		$old_wid = $workflow_state->wid;
+		$new_sid = Database::getConnection('default')
+                 ->select('workflow_states', 'ws')
+                 ->fields('ws', array('wid', 'sid', 'state'))
+				 ->condition('wid', $old_wid)
+				 ->condition('state', $state)
+                 ->execute()
+                 ->fetchObject();
+		return $new_sid -> sid;
+	}
+	return null;
+  }
    public function getQuery(){
 	  return $this -> query();
   }
@@ -187,17 +218,10 @@ class ACLinkTypeMigration extends ACNodeMigration {
 	if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-
-    $workflow_row = Database::getConnection('legacy', $this->sourceConnection)
-                 ->select('workflow_node', 'wd')
-                 ->fields('wd', array('nid', 'sid', 'uid', 'stamp'))
-				 ->condition('nid', $row->nid)
-                 ->execute()
-                 ->fetchObject();
-	//print_r($workflow_row);
-
-    if ($workflow_row ) {
-       $row->workflow_node = array($workflow_row->sid);
+	//workflow sid
+	$new_sid=$this->get_new_sid($row->nid);
+    if ($new_sid) {
+	   $row->workflow_node = array($new_sid);
     }
     else {
       $this->saveMessage(t('No workflow_node data for node !nid', array('!nid' => $nid)));
@@ -233,15 +257,10 @@ class ACNoteTypeMigration extends ACNodeMigration {
       return FALSE;
     }
 
-    $workflow_row = Database::getConnection('legacy', $this->sourceConnection)
-                 ->select('workflow_node', 'wd')
-                 ->fields('wd', array('nid', 'sid', 'uid', 'stamp'))
-				 ->condition('nid', $row->nid)
-                 ->execute()
-                 ->fetchObject();
-	
-    if ($workflow_row ) {
-       $row->workflow_node = array($workflow_row->sid);
+    //workflow sid
+	$new_sid=$this->get_new_sid($row->nid);
+    if ($new_sid) {
+	   $row->workflow_node = array($new_sid);
     }
     else {
       $this->saveMessage(t('No workflow_node data for node !nid', array('!nid' => $nid)));
@@ -275,16 +294,10 @@ class ACPCITypeMigration extends ACNodeMigration {
 	if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-
-    $workflow_row = Database::getConnection('legacy', $this->sourceConnection)
-                 ->select('workflow_node', 'wd')
-                 ->fields('wd', array('nid', 'sid', 'uid', 'stamp'))
-				 ->condition('nid', $row->nid)
-                 ->execute()
-                 ->fetchObject();
-	
-    if ($workflow_row ) {
-       $row->workflow_node = array($workflow_row->sid);
+//workflow sid
+	$new_sid=$this->get_new_sid($row->nid);
+    if ($new_sid) {
+	   $row->workflow_node = array($new_sid);
     }
     else {
       $this->saveMessage(t('No workflow_node data for node !nid', array('!nid' => $nid)));
@@ -318,15 +331,10 @@ class ACNHPIDIngredientMigration extends ACNodeMigration {
       return FALSE;
     }
 
-    $workflow_row = Database::getConnection('legacy', $this->sourceConnection)
-                 ->select('workflow_node', 'wd')
-                 ->fields('wd', array('nid', 'sid', 'uid', 'stamp'))
-				 ->condition('nid', $row->nid)
-                 ->execute()
-                 ->fetchObject();
-	
-    if ($workflow_row ) {
-       $row->workflow_node = array($workflow_row->sid);
+    //workflow sid
+	$new_sid=$this->get_new_sid($row->nid);
+    if ($new_sid) {
+	   $row->workflow_node = array($new_sid);
     }
     else {
       $this->saveMessage(t('No workflow_node data for node !nid', array('!nid' => $nid)));
@@ -358,17 +366,11 @@ class ACComboMigration extends ACNodeMigration {
 	if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-	//print_r($row->field_combo_nhpid_name);
-	// workflow node to workflow field
-    $workflow_row = Database::getConnection('legacy', $this->sourceConnection)
-                 ->select('workflow_node', 'wd')
-                 ->fields('wd', array('nid', 'sid', 'uid', 'stamp'))
-				 ->condition('nid', $row->nid)
-                 ->execute()
-                 ->fetchObject();
-	
-    if ($workflow_row ) {
-       $row->workflow_node = array($workflow_row->sid);
+	//print_r($row);
+	//workflow sid
+	$new_sid=$this->get_new_sid($row->nid);
+    if ($new_sid) {
+	   $row->workflow_node = array($new_sid);
     }
     else {
       $this->saveMessage(t('No workflow_node data for node !nid', array('!nid' => $nid)));
@@ -388,8 +390,7 @@ class ACComboMigration extends ACNodeMigration {
 		}
 	}
 	$row->field_combo_nhpid_name = $target_ids;
-	//print_r($row->field_combo_nhpid_name);
-	//print_r($row->{'field_current_tp_status:entity_id'});
+	//print_r($row);
 			
 	return True;
   }
@@ -478,16 +479,10 @@ class ACMIMigration extends ACNodeMigration {
       return FALSE;
     }
 	//print_r($row->field_mi_nhpid_name);
-	// workflow node to workflow field
-    $workflow_row = Database::getConnection('legacy', $this->sourceConnection)
-                 ->select('workflow_node', 'wd')
-                 ->fields('wd', array('nid', 'sid', 'uid', 'stamp'))
-				 ->condition('nid', $row->nid)
-                 ->execute()
-                 ->fetchObject();
-	
-    if ($workflow_row ) {
-       $row->workflow_node = array($workflow_row->sid);
+	//workflow sid
+	$new_sid=$this->get_new_sid($row->nid);
+    if ($new_sid) {
+	   $row->workflow_node = array($new_sid);
     }
     else {
       $this->saveMessage(t('No workflow_node data for node !nid', array('!nid' => $nid)));
