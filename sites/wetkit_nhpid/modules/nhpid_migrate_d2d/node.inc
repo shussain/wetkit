@@ -10,8 +10,13 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 	$this->row_counter_cutoff = 100;
 	
 	$this->destination_type = $arguments['destination_type'];
+	//print_r($arguments['destination_type'] . "\n");
+	
     $this->source_type = $arguments['source_type'];
 	$field_instances = field_info_instances('node', $arguments['destination_type']);
+	if ($this->destination_type =='mono_risk'){
+		print_r($field_instances);
+	}
 	if (isset($arguments['dependencies'])){
 		$this->dependencies = $arguments['dependencies'];
 	}
@@ -27,8 +32,12 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		}
 		$fields[$field_name] = $info['label'];
 	}
-	//print_r($fields);
+	
+	//print_r($field_instances);
 	$this -> destination_fields=$fields;
+	if ($this->destination_type =='mono_risk'){
+		print_r($this -> destination_fields);
+	}
 	foreach($this -> destination_fields as $field_name => $label){
 		if ($field_name == 'field_its_ids'){
 			$this->addFieldMapping('field_its_ids', 'field_its_ids');
@@ -49,6 +58,16 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		}
 		elseif ($field_name == 'field_preparation_code'){
 			$this->addFieldMapping('field_preparation_code', 'preparation_code');
+		}
+		elseif ($field_name == 'field_mono_combination_dose'){
+			$this->addFieldMapping('field_mono_combination_dose', 'field_mono_combination_doses');
+		}
+		elseif ($field_name == 'field_age_unit'){
+			$this->addFieldMapping('field_age_unit', 'field_unit_age');
+		}
+		elseif ($field_name == 'field_mono_citation'){
+			$this->addFieldMapping('field_mono_citation', 'field_mono_citation');
+			print_r ("mapping field_mono_citation \n");
 		}
 		/***
 		 The migrate module somehow interprete field_title as node title field. It maps is as field_data_field_title0. The mapping of this field has to be skipped. The field data is added in complete().
@@ -91,7 +110,7 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		gc_collect_cycles();
 		//print_r('GC run\n');
 	}
-	//print_r($entity);
+	print_r($entity);
   }
    /**
    * Implementation of Migration::prepareRow().
@@ -164,7 +183,7 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 	}
 
 	//$methods = get_class_methods($this);
-	//print_r($row);
+	print_r($row);
 	return True;
   }
   
@@ -236,28 +255,24 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
   }
   
   public function map_field_reference(&$row, $field_name){
-	//print_r($field_name ."\n");
+	
 	//print_r($row);
-		
-	if($field_name=='field_age_unit'){ //do not ask me why I do that.
-		$field_name_entity_id = "field_unit_age:entity_id";
-		if (property_exists($row, $field_name_entity_id)){
-			$legacy_nids=$row->{"$field_name_entity_id"};
-			print_r ($row->{"$field_name_entity_id"});
-			$target_ids= array();
-			if (!empty($legacy_nids)){
-				foreach($legacy_nids as $legacy_nid){
-					$target_ids[] = $this->get_new_nid($legacy_nid);
-				}
-				
-				//print_r ($target_ids);
-				$row->{$field_name}=$target_ids;
-			}
-		}
-		
+	//print_r($field_name ."\n");
+	$field_name_entity_id = $field_name . ':entity_id';
+	$source_field_name = $field_name;
+	if ($field_name=='field_mono_combination_dose'){
+		$field_name_entity_id = 'field_mono_combination_doses:entity_id';
+		$source_field_name = 'field_mono_combination_doses';
 	}
-	if (property_exists($row, "$field_name:entity_id")){
-		$legacy_nids=$row->{"$field_name:entity_id"};
+	if ($field_name=='field_age_unit'){
+		$field_name_entity_id = 'field_unit_age:entity_id';
+		$source_field_name = 'field_unit_age';
+	}
+
+	//print_r($row->{$field_name_entity_id});	
+	
+	if (property_exists($row, $field_name_entity_id)){
+		$legacy_nids=$row->{$field_name_entity_id};
 		$target_ids= array();
 		if (!empty($legacy_nids)){
 			foreach($legacy_nids as $legacy_nid){
@@ -265,7 +280,7 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 			}
 			
 			//print_r ($target_ids);
-			$row->{$field_name}=$target_ids;
+			$row->{$source_field_name}=$target_ids;
 		}
 	}
   }
