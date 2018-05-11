@@ -44,6 +44,9 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		elseif ($field_name == 'field_legacy_nid'){
 			$this->addFieldMapping('field_legacy_nid', 'nid');
 		}
+		elseif ($field_name == 'field_chili_id'){
+			//skip mapping. Do not why the field is missing from legacy nhpid
+		}
 		elseif ($field_name == 'field_preparation_code'){
 			$this->addFieldMapping('field_preparation_code', 'preparation_code');
 		}
@@ -109,6 +112,7 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 	foreach($this -> destination_fields as $field_name => $label){
 		$field=field_info_field($field_name);
 		//mapping entity reference fields target id
+		//print_r("$field_name: ". $field['type']. "\n");
 		if ($field['type'] == 'entityreference'){
 			$this->map_field_reference($row, $field_name);
 		}
@@ -133,9 +137,9 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 			}
 		}
 		// Its ids. Change the original chili its ids to AO nid.
-		if ($field_name == 'field_its_ids'){
-			$this->set_ao_its_nid($row);
-		}
+		//if ($field_name == 'field_its_ids'){
+		//	$this->set_ao_its_nid($row);
+		//}
 		
 		// Some legacy vales of field_fema_number is not numeric.
 		if ($field_name == 'field_fema_number'){
@@ -232,6 +236,26 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
   }
   
   public function map_field_reference(&$row, $field_name){
+	//print_r($field_name ."\n");
+	//print_r($row);
+		
+	if($field_name=='field_age_unit'){ //do not ask me why I do that.
+		$field_name_entity_id = "field_unit_age:entity_id";
+		if (property_exists($row, $field_name_entity_id)){
+			$legacy_nids=$row->{"$field_name_entity_id"};
+			print_r ($row->{"$field_name_entity_id"});
+			$target_ids= array();
+			if (!empty($legacy_nids)){
+				foreach($legacy_nids as $legacy_nid){
+					$target_ids[] = $this->get_new_nid($legacy_nid);
+				}
+				
+				//print_r ($target_ids);
+				$row->{$field_name}=$target_ids;
+			}
+		}
+		
+	}
 	if (property_exists($row, "$field_name:entity_id")){
 		$legacy_nids=$row->{"$field_name:entity_id"};
 		$target_ids= array();
@@ -239,6 +263,8 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 			foreach($legacy_nids as $legacy_nid){
 				$target_ids[] = $this->get_new_nid($legacy_nid);
 			}
+			
+			//print_r ($target_ids);
 			$row->{$field_name}=$target_ids;
 		}
 	}
