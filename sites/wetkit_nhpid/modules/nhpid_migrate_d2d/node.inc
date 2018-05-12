@@ -62,19 +62,11 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		elseif ($field_name == 'field_mono_combination_dose'){
 			$this->addFieldMapping('field_mono_combination_dose', 'field_mono_combination_doses');
 		}
-		elseif ($field_name == 'field_age_unit'){
-			$this->addFieldMapping('field_age_unit', 'field_unit_age');
+		
+		elseif ($field_name == 'field_journal_title'){
+			$this->addFieldMapping('field_journal_title', 'field_title');
 		}
-		elseif ($field_name == 'field_mono_citation'){
-			$this->addFieldMapping('field_mono_citation', 'field_mono_citation');
-			print_r ("mapping field_mono_citation \n");
-		}
-		/***
-		 The migrate module somehow interprete field_title as node title field. It maps is as field_data_field_title0. The mapping of this field has to be skipped. The field data is added in complete().
-		***/
-		elseif ($field_name == 'field_title'){
-			//$this->addFieldMapping('field_title', 'field_title');
-		}
+		
 		else{
 			$this->addFieldMapping($field_name, $field_name);
 		}
@@ -90,17 +82,7 @@ abstract class NHPIDNodeMigration extends DrupalNode7Migration {
 		$entity->uid=$row->uid;
 		//print_r ('new_uid: ' . $entity->uid . "\n");
 	}
-	/***
-	 The migrate module somehow interprete field_title as node title field. It maps is as field_data_field_title0. The mapping of this field is skipped (see function __construct). The following code added the field data back.
-	***/
-	if($row->field_title){
-		$field_title=array();
-		foreach($row->field_title as $value){
-			$field_title[$row->language][]=['value'=>$value];
-		}
-		$entity->field_title=$field_title;
-		node_save($entity);
-	}
+	
 	
 	print_r($row->title . " is migrated \n");
 	// Run garbage collector to further reduce memory.
