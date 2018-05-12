@@ -811,10 +811,7 @@ function nhpid_get_field_conditionally_requireness_errors($node, &$errors) {
     $counts = array();
     $count_max = 0;
 	$fields_values = array();
-	//dpm($fields);
-	$fields=array_slice($fields, 0, 5);
-	 $items_values = nhpid_api_get_field_values($node, 'field_route_of_admin', array(), $node->language, FALSE, TRUE);
-
+	
     foreach ($fields as $field){
 	  $items_values = nhpid_api_get_field_values($node, $field, array(), $node->language, FALSE, TRUE);
       $fields_values[$field]=$items_values;
@@ -873,6 +870,11 @@ function nhpid_get_field_conditionally_requireness_fields($node_type) {
   foreach($rules_ori as $rule_ori){
     $rule_out = array();
     $rule_ori_array =  explode('=>', $rule_ori);
+	//ToDo: some rule are set in wrong format, such as mono_rdn_value. However rule settings cannot be saved for unknow reason.
+	if (count($rule_ori_array)==1){
+		$rule_ori_array =  explode('=', $rule_ori);
+	}
+	
     $check_multi_val_flag = $rule_ori_array[1];
     $rule_out['check_multi_val_flag'] = strtoupper($check_multi_val_flag) == 'TRUE' ? TRUE : FALSE;
     $rule_ori = $rule_ori_array[0];

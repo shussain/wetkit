@@ -13,7 +13,7 @@ function nhpid_migrate_d2d_drush_command() {
 	  'operation' => 'clear-only, import-only, clear-and-import. Default:import-only',
 	  'update' =>'Process updating all imported items. Effective only for imports.',
 	  'groups' =>'Comma delimited group names',
-	  'batch_size'=>'Integer, the number of records to be processed in one batch. Default: 1000',
+	  'batch_size'=>'Integer, the number of records to be processed in one batch. Default: 200',
 	  'memory_limit'=>'Drupal memory limit, like 860M, 2G, etc. Default: 1024M',
     ),
     'examples' => array(
@@ -33,7 +33,7 @@ function drush_nhpid_migrate_d2d_nhpid_dms_migrate(){
     
   // Option
   $operation = drush_get_option('operation', 'import-only');
-  $batch_size = drush_get_option('batch_size', '1000');
+  $batch_size = drush_get_option('batch_size', '200');
   $memory_limit=drush_get_option('memory_limit', '1024M');
   if(!drupal_check_memory_limit($memory_limit)){
 	  ini_set('memory_limit', $memory_limit);
@@ -125,7 +125,7 @@ function drush_nhpid_migrate_d2d_nhpid_dms_migrate(){
 								$idlist=implode(',', $ids_chunk);
 								drush_invoke_process('@self', 'migrate-import', array($migrate), array('update'=>True, 'idlist' =>$idlist, 'feedback'=>'100 seconds'));
 								$processed = $processed + count($ids_chunk);
-								$remaining = $unprocessed_ids - $processed;
+								$remaining = $unprocessed - $processed;
 								print_r("Total: $unprocessed. Processed: $processed. Remaining: $remaining\n");
 							}
 							
