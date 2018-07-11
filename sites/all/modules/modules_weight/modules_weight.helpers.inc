@@ -69,7 +69,7 @@ function _modules_weight_modules_list($force = FALSE) {
     }
   }
   // Sorting all modules by their weight.
-  uasort($modules, 'drupal_sort_weight');
+  uasort($modules, 'sort_by_weight_and_name');
 
   return $modules;
 }
@@ -109,4 +109,33 @@ function _modules_weight_module_get_weight($module) {
   $weight = db_query($query, array(':name' => $module))->fetchObject()->weight;
 
   return $weight;
+}
+
+/**
+ * Sorts a structured array by the 'weight' and 'name element.
+ *
+ * Note that the sorting is by the 'weight' array element, not by the render
+ * element property '#weight'.
+ *
+ * Callback for uasort().
+ *
+ * @param array $a
+ *   First item for comparison. The compared items should be associative
+ *   arrays that optionally include a 'weight' element. For items without a
+ *   'weight' element, a default value of 0 will be used.
+ * @param array $b
+ *   Second item for comparison.
+ *
+ * @return int
+ *   The comparison result for uasort().
+ */
+function sort_by_weight_and_name(array $a, array $b) {
+  $a_weight = is_array($a) && isset($a['weight']) ? $a['weight'] : 0;
+  $b_weight = is_array($b) && isset($b['weight']) ? $b['weight'] : 0;
+
+  if ($a_weight == $b_weight) {
+    return ($a['name'] < $b['name'] ? -1 : 1);
+  }
+
+  return $a_weight < $b_weight ? -1 : 1;
 }

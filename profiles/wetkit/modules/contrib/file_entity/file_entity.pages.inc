@@ -123,19 +123,6 @@ function file_entity_add_upload_step_upload($form, &$form_state, array $options 
     '#default_value' => isset($form_state['storage']['upload']) ? $form_state['storage']['upload'] : NULL,
   );
 
-  if (empty($options['internet_media'])) {
-    // Add an option to specify the upload path if the user has permission to do so.
-    $form['upload_path'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Upload path'),
-      '#description' => t('Enter the path within the upload folder where you would like to place the file (e.g. "documents/finance"). Do not add preceding or trailing slashes. Leave blank to keep it at the root, with no subfolders.'),
-      '#default_value' => file_uri_target($form['upload']['#upload_location']),
-      '#maxlength' => 255,
-      '#autocomplete_path' => 'file/add/path/autocomplete',
-      '#access' => file_entity_upload_path_access(),
-    );
-  }
-
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['next'] = array(
     '#type' => 'submit',
@@ -479,25 +466,6 @@ function file_entity_add_upload_submit($form, &$form_state) {
       // Change the file from temporary to permanent.
       $file->status = FILE_STATUS_PERMANENT;
 
-      // Move the file to the specified target directory if the user is authorized.
-      if (file_entity_upload_path_access() && file_entity_file_is_writeable($file)) {
-        // A slash is only needed before the filename if we're dropping the file
-        // somewhere other than the root of the filesystem. Otherwise, we'll
-        // end up with too many (e.g. "public:///file.png").
-        $separator = strlen($form_state['storage']['upload_path']) ? "/" : "";
-        // Get the URI for the target path.
-        $uri_new = file_entity_upload_destination_uri(array(
-          'uri_scheme' => file_uri_scheme($file->uri),
-          'file_directory' => $form_state['storage']['upload_path'],
-        )) . $separator . drupal_basename($file->uri);
-        // If it changed, move the file to its new location.
-        if ($file->uri != $uri_new) {
-          $path = drupal_dirname($uri_new);
-          file_prepare_directory($path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-          $file = file_move($file, $uri_new, FILE_EXISTS_RENAME);
-        }
-      }
-
       // Save the form fields.
       // Keep in mind that the values for the Field API fields must be in
       // $form_state['values'] and not in ['storage']. This is true as long as
@@ -549,12 +517,7 @@ function file_entity_upload_destination_uri(array $params, array $data = array()
     'file_directory' => variable_get('file_entity_default_file_directory', ''),
   );
 
-  // Sanitize the provided path by removing any slashes and dots from the
-  // beginning and end, and neutralize any attempts to traverse up the tree.
-  // We're assuming it's not necessary to run check_url() on it because this is
-  // usually done on output.
-  $destination = trim($params['file_directory'], '/.');
-  $destination = str_replace('/../', '/', $destination);
+  $destination = trim($params['file_directory'], '/');
 
   // Replace tokens.
   $destination = token_replace($destination, $data);
@@ -596,30 +559,9 @@ function file_entity_add_upload_multiple($form, &$form_state, $params = array())
  * Submit handler for the multiple upload form.
  */
 function file_entity_add_upload_multiple_submit($form, &$form_state) {
-  // Set the upload directory where the file should be dropped.
-  if (file_entity_upload_path_access() && isset($form_state['values']['path'])) {
-    // The current user has permission to specify the location.
-    // Grab it from the submitted form.
-    $upload_location = file_entity_upload_destination_uri(array(
-      'file_directory' => $form_state['values']['path'],
-    )) . "/";
-  }
-  else if (file_entity_upload_path_access() && isset($form_state['values']['upload_path'])) {
-    // The website is using plupload,
-    // and the current user has permission to specify the location.
-    // Grab it from the submitted form.
-    $upload_location = file_entity_upload_destination_uri(array(
-      'file_directory' => $form_state['values']['upload_path'],
-    )) . "/";
-  }
-  else if (file_entity_upload_path_access() && !empty($form['upload']['#upload_location'])) {
-    // If the form specfied a directory at the outset, use that.
-    $upload_location = $form['upload']['#upload_location'] . '/';
-  }
-  else {
-    // Use the default location for uploaded files.
-    $upload_location = file_default_scheme() . '://';
-  }
+  $upload_location = !empty($form['upload']['#upload_location']) ?
+    $form['upload']['#upload_location'] . '/' :
+    variable_get('file_default_scheme', 'public') . '://';
 
   // Ensure writable destination directory for the files.
   file_prepare_directory($upload_location, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
@@ -893,34 +835,27 @@ function file_entity_edit_submit($form, &$form_state) {
   if (!empty($form_state['values']['replace_upload'])) {
     $replacement = $form_state['values']['replace_upload'];
     // Move file from temp to permanent home.
-    if (pathinfo($replacement->uri, PATHINFO_EXTENSION) == pathinfo($file->uri, PATHINFO_EXTENSION)) {
-      if ($new_file_uri = file_unmanaged_copy($replacement->uri, $file->uri, FILE_EXISTS_REPLACE)) {
-        // Remove temporary file.
-        file_delete($replacement);
-      }
-    } else {
-      if (!empty($form_state['values']['replace_keep_original_filename'])
-      && $form_state['values']['replace_keep_original_filename']) {
-        $destination_uri = rtrim($file->uri, drupal_basename($file->uri)) . drupal_basename($file->uri);
-      }
-      else {
-        $destination_uri = rtrim($file->uri, drupal_basename($file->uri)) . drupal_basename($replacement->uri);
-      }
-      $replace_mode = $destination_uri == $file->uri ? FILE_EXISTS_REPLACE : FILE_EXISTS_RENAME;
-      if ($new_file_uri = file_unmanaged_copy($replacement->uri, $destination_uri, $replace_mode)) {
-        // @todo Add watchdog() about replaced file here?
+    if (!empty($form_state['values']['replace_keep_original_filename'])
+    && $form_state['values']['replace_keep_original_filename']) {
+      $destination_uri = rtrim($file->uri, drupal_basename($file->uri)) . drupal_basename($file->uri);
+    }
+    else {
+      $destination_uri = rtrim($file->uri, drupal_basename($file->uri)) . drupal_basename($replacement->uri);
+    }
+    $replace_mode = $destination_uri == $file->uri ? FILE_EXISTS_REPLACE : FILE_EXISTS_RENAME;
+    if ($new_file_uri = file_unmanaged_copy($replacement->uri, $destination_uri, $replace_mode)) {
+      // @todo Add watchdog() about replaced file here?
 
-        // Remove temporary file.
-        file_delete($replacement);
+      // Remove temporary file.
+      file_delete($replacement);
 
-        // Update if the uri target has changed.
-        if ($new_file_uri != $file->uri) {
-          // Store the original file uri to delete if save is successful.
-          $orphaned_uri = $file->uri;
+      // Update if the uri target has changed.
+      if ($new_file_uri != $file->uri) {
+        // Store the original file uri to delete if save is successful.
+        $orphaned_uri = $file->uri;
 
-          // Update file entity uri.
-          $file->uri = $new_file_uri;
-        }
+        // Update file entity uri.
+        $file->uri = $new_file_uri;
       }
     }
   }

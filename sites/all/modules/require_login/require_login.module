@@ -1,18 +1,19 @@
 <?php
+
 /**
  * @file
  * require_login.module
  */
 
-define('REQUIRE_LOGIN_DEFAULT_MESSAGE', 'You must login to use this site.');
+define('REQUIRE_LOGIN_DEFAULT_MESSAGE', 'You must login to view this page.');
 
 /**
  * Implements hook_menu().
  */
 function require_login_menu() {
-  $items['admin/config/system/require-login'] = array(
-    'title' => 'Require Login',
-    'description' => 'Configure Require Login settings.',
+  $items['admin/config/people/require-login'] = array(
+    'title' => 'Require login',
+    'description' => 'Settings for required user authentication (login).',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('require_login_admin_settings'),
     'file' => 'require_login.admin.inc',
@@ -28,8 +29,8 @@ function require_login_menu() {
 function require_login_permission() {
   return array(
     'administer require login' => array(
-      'title' => t('Administer Require Login'),
-      'description' => t('Customize require login configurations.'),
+      'title' => t('Administer require login'),
+      'description' => t('Configure required user authentication (login) settings.'),
     ),
   );
 }
@@ -39,10 +40,8 @@ function require_login_permission() {
  */
 function require_login_init() {
 
-  // Check user authentication status. Non-authenticated visitors will
-  // automatically be redirected to /user/login (OR custom configured
-  // user login path). Display customizable message to user stating
-  // authentication requirements.
+  // Check user authentication status. Non-authenticated users will
+  // automatically redirect to /user/login (OR configured login path).
   if (!require_login_authcheck()) {
     $query = array('destination' => $_GET['q']);
 
@@ -62,6 +61,9 @@ function require_login_init() {
     );
     if ($auth_path = filter_xss_admin(trim(variable_get('require_login_auth_path', '')))) {
       $redirect = drupal_parse_url($auth_path);
+      if (empty($redirect['query'])) {
+        $redirect['query'] = $query;
+      }
     }
 
     drupal_goto(ltrim($redirect['path'], ''), array(
@@ -74,17 +76,17 @@ function require_login_init() {
 /**
  * Checks current user authentication.
  *
- * @return boolean
+ * @return bool
  *   Returns TRUE if authenticated and FALSE otherwise.
  */
 function require_login_authcheck() {
   global $base_path, $base_url;
-  $path = '/'. drupal_get_path_alias($_GET['q']);
+  $path = '/' . drupal_get_path_alias($_GET['q']);
 
   // Isolate request path from subdirectory when present.
   $raw_uri = request_uri();
   if ($base_path != '/') {
-    $current_uri = '/'. str_replace($base_path, '', $raw_uri);
+    $current_uri = '/' . str_replace($base_path, '', $raw_uri);
   }
   else {
     $current_uri = $raw_uri;
@@ -95,14 +97,13 @@ function require_login_authcheck() {
     $path = $base_path . trim($current_uri, '/');
   }
 
-  // Compare current URL with customizable excluded paths. Returns TRUE when
-  // at least one excluded path matches the current page path. Also includes
-  // custom configured user login path with exclusions.
+  // Compare current path with configured exclude paths. Returns TRUE when
+  // at least one excluded path matches the current path.
   $exclude_paths = explode(PHP_EOL, variable_get('require_login_excluded_paths', ''));
   foreach ($exclude_paths as $key => $exclude_path) {
     $exclude_paths[$key] = trim($exclude_path);
     if ($exclude_paths[$key] == '<front>') {
-      $exclude_paths[$key] = '/'. drupal_get_path_alias(variable_get('site_frontpage', 'node'));
+      $exclude_paths[$key] = '/' . drupal_get_path_alias(variable_get('site_frontpage', 'node'));
     }
   }
   if ($auth_path = filter_xss_admin(trim(variable_get('require_login_auth_path', '')))) {
@@ -116,21 +117,27 @@ function require_login_authcheck() {
   // Various checks to determine exceptions for current page. Returns TRUE
   // when at least one check has evaluated as TRUE.
   $checks = array(
-    (user_is_logged_in()), // Authentication
-    (variable_get('maintenance_mode', 0)), // Maintenance Mode
-    (isset($_SESSION['openid'])), // OpenID
-    (preg_match('/^\/cron.php/i', $current_uri)), // Cron
-    (preg_match('/\/update.php/i', request_uri())), // Update
-    (preg_match('/\/install.php/i', request_uri())), // Install
-    (arg(0) == 'user' && (!arg(1) || !is_numeric(arg(1)))), // User Pages
-    (function_exists('drupal_is_cli') && drupal_is_cli()), // Drush
+    // Check user authentication.
+    (user_is_logged_in()),
+    // Check maintenance mode.
+    (variable_get('maintenance_mode', 0)),
+    // Check cron.php file.
+    (preg_match('/^\/cron.php/i', $current_uri)),
+    // Check update.php file.
+    (preg_match('/\/update.php/i', request_uri())),
+    // Check install.php file.
+    (preg_match('/\/install.php/i', request_uri())),
+    // Check OpenID integration.
+    (isset($_SESSION['openid'])),
+    // Check user pages.
+    (arg(0) == 'user' && (!arg(1) || !is_numeric(arg(1)))),
+    // Check drush command.
+    (function_exists('drupal_is_cli') && drupal_is_cli()),
   );
   foreach ($checks as $check) {
     if ($check) {
       return TRUE;
     }
   }
-
-  // Return FALSE when checks have all passed.
   return FALSE;
 }

@@ -201,7 +201,6 @@ function wetkit_metatag_metatag_info_alter(&$info) {
   // Remove tags we don't need to leverage.
   unset($info['tags']['abstract']);
   unset($info['tags']['author']);
-  unset($info['tags']['canonical']);
   unset($info['tags']['copyright']);
   unset($info['tags']['generator']);
   unset($info['tags']['image_src']);
@@ -213,4 +212,11 @@ function wetkit_metatag_metatag_info_alter(&$info) {
   unset($info['tags']['robots']['form']['#options']['noydir']);
   unset($info['tags']['shortlink']);
   unset($info['tags']['standout']);
+
+  if (variable_get('wetkit_metatag_canonical', TRUE)) {
+    unset($info['tags']['canonical']);
+  }
+  else {
+    $info['tags']['canonical']['group'] = 'defaults';
+  }
 }

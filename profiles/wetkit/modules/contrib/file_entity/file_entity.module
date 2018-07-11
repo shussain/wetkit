@@ -197,13 +197,6 @@ function file_entity_menu() {
   if (module_exists('plupload') && module_exists('multiform')) {
     $items['file/add']['page arguments'] = array('file_entity_add_upload_multiple');
   }
-  // Autocomplete path for getting a list of file upload directories.
-  $items['file/add/path/autocomplete'] = array(
-    'title' => 'Autocomplete for upload paths',
-    'page callback' => 'file_entity_upload_path_autocomplete',
-    'access callback' => 'file_entity_upload_path_access',
-    'type' => MENU_CALLBACK,
-  );
   $items['file/add/upload'] = array(
     'title' => 'Upload',
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -450,9 +443,6 @@ function file_entity_permission() {
     'administer files' => array(
       'title' => t('Administer files'),
       'restrict access' => TRUE,
-    ),
-    'choose file destination' => array(
-      'title' => t('Select destination for each uploaded file'),
     ),
     'create files' => array(
       'title' => t('Add and upload new files'),
@@ -2502,96 +2492,6 @@ function file_entity_match_mimetypes($needle, $haystack) {
   }
 
   return FALSE;
-}
-
-/**
- * Returns a list of possible directories where files can be uploaded.
- *
- * This is an autocomplete function.
- *
- * @see file_entity_menu()
- * @see file_entity_add_upload_step_upload()
- *
- * @param string $typed
- *   The string used for searching.
- *
- * @return string
- *   A list of directories in JSON format.
- */
-function file_entity_upload_path_autocomplete($typed = "") {
-  // Don't do anything if the user hasn't entered any data yet.
-  if (!strlen($typed)) {
-    drupal_json_output(array());
-    return;
-  }
-  // Get the location of the file system based on the scheme we're using.
-  $default_scheme = file_default_scheme();
-  $wrapper = file_stream_wrapper_get_instance_by_scheme($default_scheme);
-  $directory = $wrapper->getDirectoryPath();
-
-  // Retrieve array of matched directory paths.
-  $paths = file_entity_dir_match($typed, $directory);
-
-  // Return the result to the form in JSON.
-  drupal_json_output($paths);
-}
-
-/**
- * Returns an array of directories that match part of a search query.
- *
- * @param $query
- *   String that will be searched on.
- * @param $directory
- *   A directory path.
- *
- * @return string
- *  An array of matches.
- */
-function file_entity_dir_match($query, $directory) {
-  // Initialize an empty list for the possible paths.
-  $paths = array();
-  // Define an iterator to traverse the file system tree.
-  $iterator = new RecursiveIteratorIterator(
-    new RecursiveDirectoryIterator(
-      $directory,
-      RecursiveDirectoryIterator::SKIP_DOTS
-    ),
-    RecursiveIteratorIterator::SELF_FIRST
-  );
-  // Traverse it.
-  while ($iterator->valid()) {
-    // Only act on directories, not files.
-    if ($iterator->isDir()) {
-      // Get the subdirectory name ensuring windows paths are supported as well.
-      $dir_name = str_replace('\\', '/', $iterator->getSubPathName());
-      // Get the number of typed characters.
-      $chars = strlen($query);
-      // If the current directory is at least as long as the number of typed
-      // characters, and the typed characters match the beginning of the
-      // current directory, add the current directory to the list.
-      if ((strlen($dir_name) >= $chars) && (substr($dir_name, 0, $chars) === $query)) {
-        $paths[$dir_name] = check_plain($dir_name);
-      }
-    }
-    // Move to the next item in the iteration.
-    $iterator->next();
-  }
-  return $paths;
-}
-
-/**
- * Determines if the current user has access to work with file upload paths.
- *
- * Proper access entails being able to view the possible upload paths and
- * selecting one of them as a target when uploading one or more files.
- *
- * @return boolean
- *   TRUE if access to work with file upload paths is allowed. FALSE otherwise.
- */
-function file_entity_upload_path_access() {
-  return user_access('choose file destination') ||
-         user_access('bypass file access') ||
-         user_access('administer files');
 }
 
 /**

@@ -56,6 +56,13 @@ function wetkit_metatag_configure_form($form, &$form_state) {
     '#default_value' => variable_get('wetkit_metatag_subject_scheme'),
     '#description' => t('Metatag Attribute for Subject (Scheme)'),
   );
+  $form['wetkit_metatag']['wetkit_metatag_canonical'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove &lt;link rel="canonical"&gt; metatag.'),
+    '#default_value' => variable_get('wetkit_metatag_canonical'),
+    '#description' => t('Checking this box will remove the canonical link metatag that is provided by Drupal Core.'),
+  );
+
   $form['#submit'][] = 'wetkit_metatag_configure_form_submit';
 
   return system_settings_form($form);

@@ -6,17 +6,16 @@ define('NHPID_FILED_LENGTH_LIMIT_TABLE', 'nhpid_field_length_limit');
 define('NHPID_EXCEL_COLUMN_MAPPING_TABLE', 'nhpid_excel_drupal_field_mapping');
 function nhpid_cron(){
  //delete older files in public folder
- /*
- $folder = drupal_realpath("public://");
+ 
+ $folder = "public://exported_data_files";
  $files = nhpid_api_delete_older_files($folder, 5);
  if ($files) watchdog('cron', 'The public file system has been cleaned up. The following files have been deleted: @files', array('@files' => implode(", ", $files) ));
-	*/
+	
  // update calculated field values
- //nhpid_api_save_all_calculated_field_values(array(), true);
- //watchdog('cron', 'The calculated field values have been updated.');
+ nhpid_api_save_all_calculated_field_values(array(), true);
+ watchdog('cron', 'The calculated field values have been updated.');
 }
 function nhpid_init(){
-
 	global $user;
 	if (!nhpid_system_lock_access()){
 	  drupal_set_message("Data exporting is in progress or the system is persistently locked. You are not allowed to edit contents nor to add new contents at this moment.", 'warning', false);
@@ -489,13 +488,18 @@ function _nhpid_field_attach_validate($entity_type, $entity, &$errors) {
 */  
 
 
-function nhpid_theme() {
+function nhpid_theme($existing, $type, $theme, $path) {
   return array(
-    'nhpid_excel_field_mapping_form_wrapper' => array(
+    'nhpid_excel_field_mapping_element_wrapper' => array(
       'render element' => 'element',
       'file' => 'nhpid_forms.inc',
       ),
-	  
+	  /*
+	 'nhpid_excel_field_mapping_form_wrapper' => array(
+      'render element' => 'form',
+      'file' => 'nhpid_forms.inc',
+      ),
+	  */
 	 'nhpid_field_length_limit_form_wrapper' => array(
       'render element' => 'element',
       'file' => 'nhpid_forms.inc',

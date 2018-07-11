@@ -31,7 +31,7 @@ function wetkit_bootstrap_preprocess_page(&$variables) {
   $library_path = libraries_get_path($wxt_active, TRUE);
   $wxt_active = str_replace('-', '_', $wxt_active);
   $wxt_active = str_replace('theme_', '', $wxt_active);
-  $wxt_role_main = 'main';
+  $wxt_role_main = 'role="main"';
 
   // Extra variables to pass to templates.
   $variables['library_path'] = $library_path;
@@ -111,11 +111,22 @@ function wetkit_bootstrap_preprocess_page(&$variables) {
     $variables['container_class'] = 'container';
   }
 
+  $i18n = module_exists('i18n_menu');
+
   // Primary menu.
   $variables['primary_nav'] = FALSE;
   if ($variables['main_menu']) {
+    // Load the tree
+    $tree = menu_tree_page_data(variable_get('menu_main_links_source', 'main-menu'));
+
+    // Localize the tree.
+    if ($i18n) {
+      $tree = i18n_menu_localize_tree($tree);
+    }
+
     // Build links.
-    $variables['primary_nav'] = menu_tree(variable_get('menu_main_links_source', 'main-menu'));
+    $variables['primary_nav'] = menu_tree_output($tree);
+
     // Provide default theme wrapper function.
     $variables['primary_nav']['#theme_wrappers'] = array('menu_tree__primary');
   }
@@ -123,8 +134,17 @@ function wetkit_bootstrap_preprocess_page(&$variables) {
   // Secondary nav.
   $variables['secondary_nav'] = FALSE;
   if ($variables['secondary_menu']) {
+    // Load the tree
+    $tree = menu_tree_page_data(variable_get('menu_secondary_links_source', 'user-menu'));
+
+    // Localize the tree.
+    if ($i18n) {
+      $tree = i18n_menu_localize_tree($tree);
+    }
+
     // Build links.
-    $variables['secondary_nav'] = menu_tree(variable_get('menu_secondary_links_source', 'user-menu'));
+    $variables['secondary_nav'] = menu_tree_output($tree);
+
     // Provide default theme wrapper function.
     $variables['secondary_nav']['#theme_wrappers'] = array('menu_tree__secondary');
   }

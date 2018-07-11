@@ -196,8 +196,8 @@ features[variable][] = media_wysiwyg_default_render
 features[variable][] = media_wysiwyg_wysiwyg_allowed_types
 features[variable][] = media_wysiwyg_wysiwyg_upload_directory
 
-; Information added by Drupal.org packaging script on 2018-04-25
-version = "7.x-4.12"
+; Information added by Drupal.org packaging script on 2018-06-19
+version = "7.x-4.13"
 core = "7.x"
 project = "wetkit_widgets"
-datestamp = "1524695288"
+datestamp = "1529368731"

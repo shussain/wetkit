@@ -647,6 +647,7 @@ $conf['404_fast_html'] = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
  * memory limit
  */
 ini_set('memory_limit', '860M');
-ini_set('max_execution_time', 1200);
-ini_set('max_input_vars', 2000);
-ini_set('post_max_size', '16M');
+// not working due to PHP_INI_PREDIR
+//ini_set('max_execution_time', 1200);
+//ini_set('max_input_vars', 2000);
+//ini_set('post_max_size', '32M');

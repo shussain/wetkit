@@ -179,7 +179,7 @@ function nhpid_field_length_limit_form_submit($form, &$form_state) {
 	
 	$batch = array(
 	  'operations' => $operations,
-	  'finished' => 'batch_re_gnerate_title_body_finished',
+	  'finished' => 'batch_job_finished',
 	  // We can define custom messages instead of the default ones.
 	  'title' => t('Reset field length limit...'),
 	  'init_message' => t('Starting.'),
@@ -631,7 +631,7 @@ function nhpid_data_node_type_form_submit($form, &$form_state) {
   $value = $form_state['values']['nhpid_ingredient_data_node_types'];
   variable_set("nhpid_ingredient_data_node_types", $value);
   $form_state['storage']['values'] = $form_state['values'];
-
+  drupal_set_message("NHPID node types have been saved.");
 }
 
 
@@ -675,6 +675,7 @@ function nhpid_its_url_form_submit($form, &$form_state) {
   drupal_flush_all_caches();
 
   variable_set("nhpid_its_url", $new_url);
+  drupal_set_message("NHPID ITS URL has been saved.");
 }
 
 /***
@@ -755,7 +756,7 @@ function nhpid_auto_title_form_submit(&$form, &$form_state) {
     //drupal_set_message(nhpid_api_dump($operations, 'red', TRUE));
     $batch = array(
       'operations' => $operations,
-      'finished' => 'batch_re_gnerate_title_body_finished',
+      'finished' => 'batch_job_finished',
       // We can define custom messages instead of the default ones.
       'title' => t('Re-generating node title and body...'),
       'init_message' => t('Starting.'),
@@ -838,7 +839,7 @@ function _nhpid_map_excel_column($item, $table_name, &$context) {
 	$node_type=$item['node_type'];
 	$excel_field_name=$item['excel_field_name'] ? $item['excel_field_name'] : 'ND';
 	$drupal_field_name=$item['drupal_field_name'];
-	$col_order=$item['col_order']!==null ? $item['col_order'] : 100;
+	$col_order=$item['col_order']!==null ? $item['col_order'] : 0;
 	$mapping_field_name=$item['drupal_field_name'];
 	
 	db_merge($table_name)
@@ -859,11 +860,11 @@ function _nhpid_map_excel_column($item, $table_name, &$context) {
 
 
    if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
-    //$context['finished'] = ($context['sandbox']['progress'] >= $context['sandbox']['max']);
+    $context['finished'] = ($context['sandbox']['progress'] >= $context['sandbox']['max']);
   }
 }
 
-function batch_re_gnerate_title_body_finished($success, $results, $operations) {
+function batch_job_finished($success, $results, $operations) {
   if ($success) {
     // Here we could do something meaningful with the results.
     // We just display the number of nodes we processed...
@@ -2041,12 +2042,12 @@ function nhpid_rule_archive_form_submit($form, &$form_state) {
 function nhpid_excel_column_title_mapping_form($form, &$form_state=NULL) {
   
   $table_name = NHPID_EXCEL_COLUMN_MAPPING_TABLE;
-  //$table_column_names = nhpid_get_table_field_names($table_name);
   $types=get_all_nhpid_data_node_types();
-  //$types = array_slice($types, -3, 3);
+  //$types = array_slice($types, 0, 5);
   $fields_not_checked=array('field_legacy_nid'=>array(),'field_parent_space'=>array(),'field_workflow'=>array());
-  //$form['#theme'] = 'nhpid_excel_field_mapping_form';
   $form['#tree']=true;
+  $form['#submit'][] = 'nhpid_excel_column_title_mapping_form_submit';
+  //$form['#theme']='nhpid_excel_field_mapping_form_wrapper';
   $trail=menu_get_active_trail();
 	$form['form_title'] = array(
 	'#type' => 'item',
@@ -2076,7 +2077,7 @@ function nhpid_excel_column_title_mapping_form($form, &$form_state=NULL) {
         '#title' => $node_name,
         '#type' => 'fieldset', 
 		//'#value' => $node_type,
-		'#theme' => 'nhpid_excel_field_mapping_form_wrapper',
+		'#theme' => 'nhpid_excel_field_mapping_element_wrapper',
         '#collapsible' => TRUE, 
         '#collapsed' => True,
       );
@@ -2090,15 +2091,20 @@ function nhpid_excel_column_title_mapping_form($form, &$form_state=NULL) {
 	  $ordered_fields=array_intersect(array_keys($data),array_keys($drupal_fields)) + array_diff( array_keys($drupal_fields),array_keys($data));
 	  //dpm($ordered_fields);
 	  //dpm(array_keys($drupal_fields));
+	  //dpm($data);
+	  $order_count=0;
       foreach($ordered_fields as $drupal_field_name) {
 		$excel_field_name=null;
 		$excel_field_order=null;
 		$field_label=$drupal_fields[$drupal_field_name];
 		$excel_field_name=!empty($form_state['values'][$node_type][$drupal_field_name]['excel_field_name'] ) ? $form_state['values'][$node_type][$drupal_field_name]['excel_field_name']  : '';
-		$excel_field_order=!empty($form_state['values'][$node_type][$drupal_field_name]['excel_field_order'] ) ? $form_state['values'][$node_type][$drupal_field_name]['excel_field_order']  : count($data) + 1;
+		$excel_field_order=!empty($form_state['values'][$node_type][$drupal_field_name]['excel_field_order'] ) ? $form_state['values'][$node_type][$drupal_field_name]['excel_field_order']  : $order_count;
+		$order_count++;
 		if (isset($data[$drupal_field_name])){
 			$excel_field_name = $data[$drupal_field_name]->excel_field_name;
-			$excel_field_order=$data[$drupal_field_name]->col_order;
+			if ($data[$drupal_field_name]->col_order >= -count($ordered_fields) && $data[$drupal_field_name]->col_order <= count($ordered_fields)){
+				$excel_field_order=$data[$drupal_field_name]->col_order;
+			}
 		}
 		$element="$drupal_field_name";
 		$form[$node_type][$element] = array(
@@ -2111,10 +2117,7 @@ function nhpid_excel_column_title_mapping_form($form, &$form_state=NULL) {
 		  '#type' => 'item',
 		  '#markup' => $drupal_field_name,
         );
-		$form[$node_type][$element]['drupal_field_name'] = array(
-		  '#type' => 'item', 
-          '#markup' => $drupal_field_name,
-        );
+		
         $form[$node_type][$element]['excel_field_name'] = array(
 		  '#type' => 'textfield', 
           //'#title' => 'Excel Field Name', 
@@ -2128,15 +2131,15 @@ function nhpid_excel_column_title_mapping_form($form, &$form_state=NULL) {
           '#title' => 'Weight', 
           '#default_value' => $excel_field_order,
 		  '#title_display' => 'invisible',
-		  '#delta' => count($ordered_fields) + 1,
+		  '#delta' => count($ordered_fields),
         );
-		
+	
       }
     }
     
   $form['submit'] = array(
   '#type' => 'submit',
-  '#value' => t('Save Required Field Setting')
+  '#value' => t('Save All')
   );
 
   return $form;  
@@ -2144,15 +2147,19 @@ function nhpid_excel_column_title_mapping_form($form, &$form_state=NULL) {
 }
 
 function nhpid_excel_column_title_mapping_form_submit($form, &$form_state) {
-   
-    $table_name = $form_state['values']['table_name'];
+    //dpm($form);
+	$table_name = $form_state['values']['table_name'];
     $node_types = $form_state['values']['node_types'];
+	//dpm($form_state['values']);
+	//dpm($form_state);
 	$operations = array();
     foreach ($node_types as $node_type => $node_name) {
 	  $drupal_field_names=$form_state['values'][$node_type];
 	  foreach($drupal_field_names as $drupal_field_name=>$data){
+
 			$excel_field_name=$data['excel_field_name'];
-			$excel_field_order=$data['weight'];
+			$excel_field_order =$data['weight'];
+			
 			$item=array(
 				  'drupal_field_name' => $drupal_field_name, 
 				  'node_type' => $node_type,
@@ -2160,13 +2167,15 @@ function nhpid_excel_column_title_mapping_form_submit($form, &$form_state) {
 				  'mapping_field_name' => $drupal_field_name,
 				  'col_order' => $excel_field_order,
 			);
+
 			$operations[] = array('_nhpid_map_excel_column', array($item, $table_name));
+			
 	  }
-      
+      //dpm($operations);
     } 
 	$batch = array(
 	  'operations' => $operations,
-	  'finished' => 'batch_re_gnerate_title_body_finished',
+	  'finished' => 'batch_job_finished',
 	  // We can define custom messages instead of the default ones.
 	  'title' => t('Map excel column with druapl field...'),
 	  'init_message' => t('Starting.'),
@@ -2177,7 +2186,7 @@ function nhpid_excel_column_title_mapping_form_submit($form, &$form_state) {
 
 	batch_set($batch);
 	batch_process();
-
+	$form_state['rebuild'] = TRUE;
 }
 
 function nhpid_lock_system_form($form, &$form_state=NULL) {
@@ -2313,6 +2322,7 @@ function nhpid_enforce_revision_log_form_submit($form, &$form_state) {
 	}
 }
 function nhpid_update_caculated_field_values_form($form, &$form_state=NULL){
+  $variable_last_update_time_name_root ='nhpidapi_calculated_field_values_last_update_time_';
   $trail=menu_get_active_trail();
 	$form['form_title'] = array(
 	'#type' => 'item',
@@ -2320,9 +2330,9 @@ function nhpid_update_caculated_field_values_form($form, &$form_state=NULL){
 	);
   $form['help']=array(
     '#type' => 'item',
-    '#markup' => "To speed up data exporting, all exported data are pre-calucalted and cached. Normally, the cached datasets are kept updated automatically. However, in case the datasets need to be updated maunualy, this is the tool to do so.",
+    '#markup' => "To speed up data exporting, all exported data are pre-calculated and cached. Normally, the cached datasets are kept updated automatically. However, in case the datasets need to be updated manually, this is the tool to do so.",
   );
-
+ 
   $form['mode']=array(
     '#type' => 'select',
     '#title' => t('Select all nodes or nodes changed since last update only'),
@@ -2332,10 +2342,22 @@ function nhpid_update_caculated_field_values_form($form, &$form_state=NULL){
   $types = get_all_nhpid_data_node_types();
 	$table_select_types = array();
   foreach ($types as $type => $value) {
-		$table_select_types[$type]=array('type'=>$value);
+		$last_update_timestamp=variable_get($variable_last_update_time_name_root . $type, null);
+		$sql = db_select('node', 'n');
+		$sql -> fields('n', array('nid'));
+		$sql -> condition('n.type', $type, '=');
+		$sql -> condition('n.changed', $last_update_timestamp, '>=');
+		$result = $sql -> execute();
+		$number_to_update=$result->rowCount();
+		$last_update_date='';
+		if ($last_update_timestamp){
+			$last_update_date=format_date($last_update_timestamp);
+		}
+		$table_select_types[$type]=array('type'=>$value,'last_updated_date'=>$last_update_date,'number_nodes_to_update'=>$number_to_update);
+		
   }
   $selected_node_types = !empty($form_state['values']['node_types']) ? $form_state['values']['node_types'] : array();
-	$ntype_header=array('type'=>"Node Types");
+  $ntype_header=array('type'=>"Node Type", 'last_updated_date' => "Last Update", 'number_nodes_to_update' =>'# of nodes to be updated');
   $form['node_types'] = array(
     '#type' => 'tableselect',
     '#header' => $ntype_header,
@@ -2353,6 +2375,7 @@ function nhpid_update_caculated_field_values_form($form, &$form_state=NULL){
   );
   return $form;
 }
+
 function nhpid_update_caculated_field_values_form_submit($form, &$form_state) {
   $node_types = $form_state['values']['node_types'];
 	$mode = $form_state['values']['mode'];
@@ -2364,7 +2387,7 @@ function nhpid_update_caculated_field_values_form_submit($form, &$form_state) {
   //drupal_set_message(nhpid_api_dump($operations, 'red', TRUE));
   $batch = array(
     'operations' => $operations,
-    'finished' => 'batch_re_gnerate_title_body_finished',
+    'finished' => 'batch_job_finished',
     // We can define custom messages instead of the default ones.
     'title' => t('Update calculated field values'),
     'init_message' => t('Starting.'),
@@ -2378,6 +2401,7 @@ function nhpid_update_caculated_field_values_form_submit($form, &$form_state) {
   batch_process();
 
   $form_state['storage']['values'] = $form_state['values'];
+  drupal_set_message("NHPID Excel column mapping has been saved.");
 }
 function update_calculated_field_values_batch($node_type, $mode, &$context) {
   $sql = "SELECT nid FROM {node} WHERE type=:type order by nid desc";
@@ -2402,8 +2426,55 @@ function update_calculated_field_values_batch($node_type, $mode, &$context) {
 function theme_nhpid_excel_field_mapping_form_wrapper($variables) {
 	//$header = array();
 	$header = array('', 'Drupal Field Name', 'Excel Column Name', 'Excel Column Order', );
-	$element = $variables['element'];
+	##$element = $variables['form'];
+	$form=$variables['form'];
+	//drupal_debug($form);
+	
+	$output='';
+	
+	foreach($form['node_types']['#value'] as $node_type => $type_label){
+		$element=$form[$node_type];
+		//drupal_debug($node_type);
+		//drupal_debug($element);
+		$rows=array();
+		foreach(element_children($element) as $field_name){
+			//$node_type = $element[$field_name]['#parents'][0];
+			//drupal_debug($field_name);
+			
+			$element[$field_name]['weight']['#attributes']['class'] = array($node_type .'-excel-column-order-weight');
+			if (strstr($field_name, 'field_')){
+				$excel_field_name=drupal_render($element[$field_name]['excel_field_name']);
 
+				$drupal_field_name=drupal_render($element[$field_name]['drupal_field_name']);
+				$weight=drupal_render($element[$field_name]['weight']);				
+				$rows[] = array(
+					'data'=>array(
+						array('class' => array('excel-column-cross')),
+						$drupal_field_name, $excel_field_name,$weight,
+					),
+					'class' => array('draggable'),
+				);
+			}
+			 unset($form[$node_type][$field_name]);
+		}
+		//drupal_debug($rows);
+		
+		  $table= theme('table', array('header' => $header, 'rows' => $rows,  'caption' => Null,'colgroups' => Null,'sticky' => True,'empty' => '','attributes' => array('id' => $node_type .'-excel-column-order')));
+		  //$output .= drupal_render_children($element);
+		  //drupal_debug($output);
+		  drupal_add_tabledrag($node_type .'-excel-column-order', 'order', 'sibling', $node_type .'-excel-column-order-weight');
+		  $form[$node_type]['#value']=$table;
+		  //drupal_debug($table);
+		
+	}
+	$output = drupal_render_children($form);
+	return $output;
+	//return drupal_render_children($form);
+}
+function theme_nhpid_excel_field_mapping_element_wrapper($variables) {
+	//$header = array();
+	$header = array('', 'Drupal Field Name', 'Excel Column Name', 'Excel Column Order', );
+	$element = $variables['element'];
 	//drupal_debug($element);
 	$rows=array();
 	foreach(element_children($element) as $field_name){
@@ -2426,7 +2497,6 @@ function theme_nhpid_excel_field_mapping_form_wrapper($variables) {
 		}
 	
 	}
-
 	//drupal_debug($rows);
 	
   $output = theme('table', array('header' => $header, 'rows' => $rows,  'caption' => Null,'colgroups' => Null,'sticky' => True,'empty' => '','attributes' => array('id' => $node_type .'-excel-column-order')));

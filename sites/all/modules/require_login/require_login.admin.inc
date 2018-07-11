@@ -1,42 +1,43 @@
 <?php
+
 /**
  * @file
  * require_login.admin.inc
  */
 
 /**
- * Page callback for require login configurations form.
+ * Require login configuration form callback.
  */
 function require_login_admin_settings() {
   $form['require_login_deny_message'] = array(
     '#type' => 'textarea',
-    '#title' => t('Deny Message'),
-    '#description' => t('Access denied message displayed after user login page redirect.'),
+    '#title' => t('Access Denied Message'),
+    '#description' => t('Shown to anonymous users prior to user authentication (login).'),
     '#default_value' => variable_get('require_login_deny_message', REQUIRE_LOGIN_DEFAULT_MESSAGE),
   );
   $items = array(
-    t('Use 	&lt;front	&gt; to exclude the front page.'),
+    t('Use &lt;front&gt; to exclude the front page.'),
     t('Use relative path to exclude content and other internal Drupal pages. <em>Example: /about/contact</em>'),
     t('Use absolute path to exclude Drupal bootstrap enabled PHP scripts. <em>Example: /path/to/drupal/script/filename.php</em>'),
   );
+  $items = theme('item_list', array('items' => $items));
   $form['require_login_excluded_paths'] = array(
     '#type' => 'textarea',
-    '#title' => t('Excluded Paths'),
-    '#description' => t('Use the excluded paths setting to disable user authentication in specific areas. Enter one exclusion per line using the following formats:') .
-      theme('item_list', array('items' => $items)),
+    '#title' => t('Exclude Paths'),
+    '#description' => t('Disable user authentication (login) requirement on specific paths. Enter one exclusion per line using the following formats:') . $items,
     '#default_value' => variable_get('require_login_excluded_paths', ''),
   );
   $form['require_login_auth_path'] = array(
     '#type' => 'textfield',
-    '#title' => t('User Login Path'),
-    '#description' => t('(Optional) Change the user login relative redirect path for anonymous users. May include URL queries and fragments.'),
-    '#default_value' => variable_get('require_login_auth_path', ''),
+    '#title' => t('User Authentication (Login) Path'),
+    '#description' => t('Override the user authentication (login) path. May include URL queries and fragments.'),
+    '#default_value' => variable_get('require_login_auth_path', 'user/login'),
   );
   return system_settings_form($form);
 }
 
 /**
- * Validate handler for require login configurations form.
+ * Require login configuration form validation handler.
  */
 function require_login_admin_settings_validate($form, &$form_state) {
   $absolutes = array();
@@ -57,8 +58,8 @@ function require_login_admin_settings_validate($form, &$form_state) {
     }
 
     // Confirm leading forward slash presence.
-    else if (substr($exclude_path, 0, 1) != '/') {
-      $exclude_paths[$key] = '/'. $exclude_path;
+    elseif (substr($exclude_path, 0, 1) != '/') {
+      $exclude_paths[$key] = '/' . $exclude_path;
     }
 
     // Trim unnecessary whitespace from ends.
@@ -70,7 +71,7 @@ function require_login_admin_settings_validate($form, &$form_state) {
 
   // Throw error if absolute paths were detected.
   if ($absolutes) {
-    form_set_error('require_login_excluded_paths', t('Excluded paths shouldn\'t include protocol or domain name. Invalid paths:<br />!paths', array(
+    form_set_error('require_login_excluded_paths', t('Exclude paths cannot include protocols or domain names. Invalid paths:<br />!paths', array(
       '!paths' => implode('<br />', $absolutes),
     )));
   }
@@ -87,8 +88,8 @@ function require_login_admin_settings_validate($form, &$form_state) {
     }
 
     // Confirm leading forward slash presence.
-    else if (substr($auth_path, 0, 1) != '/') {
-      $form_state['values']['require_login_auth_path'] = '/'. $auth_path;
+    elseif (substr($auth_path, 0, 1) != '/') {
+      $form_state['values']['require_login_auth_path'] = '/' . $auth_path;
     }
 
     // Trim unnecessary whitespace from ends.

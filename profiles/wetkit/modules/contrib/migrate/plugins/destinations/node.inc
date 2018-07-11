@@ -147,10 +147,6 @@ class MigrateDestinationNode extends MigrateDestinationEntity {
       }
       else {
         $node->nid = $row->migrate_map_destid1;
-        if (module_exists('uuid')) {
-          $uuid = entity_get_uuid_by_id('node', array($node->nid));
-          $node->uuid = current($uuid);
-        }
       }
       // Get the existing vid, tnid so updates don't generate notices
       $values = db_select('node', 'n')
@@ -251,11 +247,11 @@ class MigrateDestinationNode extends MigrateDestinationEntity {
       foreach ($old_node as $field => $value) {
         // An explicit NULL in the source data means to wipe to old value (i.e.,
         // don't copy it over from $old_node)
-        if (property_exists($node, $field) && $node->$field === NULL) {
+        if (property_exists($node, $field) && $node->{$field} === NULL) {
           // Ignore this field
         }
-        elseif (!isset($node->$field)) {
-          $node->$field = $old_node->$field;
+        elseif (!isset($node->{$field})) {
+          $node->{$field} = $old_node->{$field};
         }
       }
     }

@@ -21,8 +21,8 @@ features[variable][] = wetkit_metatag_creator
 features[variable][] = wetkit_metatag_optional_settings
 features[variable][] = wetkit_metatag_subject_scheme
 
-; Information added by Drupal.org packaging script on 2018-04-20
-version = "7.x-4.15"
+; Information added by Drupal.org packaging script on 2018-06-19
+version = "7.x-4.16"
 core = "7.x"
 project = "wetkit_metatag"
-datestamp = "1524182637"
+datestamp = "1529369054"

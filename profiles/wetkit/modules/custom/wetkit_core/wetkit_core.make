@@ -26,13 +26,13 @@ projects[date][subdir] = contrib
 projects[defaultconfig][version] = 1.0-alpha11
 projects[defaultconfig][subdir] = contrib
 
-projects[devel][version] = 1.5
+projects[devel][version] = 1.6
 projects[devel][subdir] = contrib
 
 projects[diff][version] = 3.3
 projects[diff][subdir] = contrib
 
-projects[elements][version] = 1.4
+projects[elements][version] = 1.5
 projects[elements][subdir] = contrib
 
 projects[entity][version] = 1.9
@@ -69,7 +69,7 @@ projects[fontawesome][version] = 2.8
 projects[fontawesome][subdir] = contrib
 projects[fontawesome][patch][2590491] = http://drupal.org/files/issues/wetkit_core-2590491-6.patch
 
-projects[hierarchical_select][version] = 3.0-beta8
+projects[hierarchical_select][version] = 3.0-beta9
 projects[hierarchical_select][subdir] = contrib
 
 projects[icon][version] = 1.0
@@ -78,9 +78,9 @@ projects[icon][subdir] = contrib
 projects[libraries][version] = 2.3
 projects[libraries][subdir] = contrib
 
-projects[link][version] = 1.4
+projects[link][version] = 1.5
 projects[link][subdir] = contrib
-projects[link][patch][2428185] = http://drupal.org/files/issues/link-broken-relative-urls-with-language-prefix-2428185-14.patch
+projects[link][patch][2428185] = https://www.drupal.org/files/issues/2018-06-12/link-broken-relative-urls-with-language-prefix-2428185-38.patch
 
 projects[linkchecker][version] = 1.3
 projects[linkchecker][subdir] = contrib
@@ -111,7 +111,7 @@ projects[panels][patch][2253919] = http://drupal.org/files/issues/the_uuids_of_c
 projects[panels][patch][2508433] = http://drupal.org/files/issues/blocks_dont_support_optional_context-2508433-1.patch
 projects[panels][patch][2856088] = http://drupal.org/files/issues/panels_3_9_code_cleanup-2856088-5.patch
 
-projects[panopoly_magic][version] = 1.51
+projects[panopoly_magic][version] = 1.55
 projects[panopoly_magic][subdir] = contrib
 projects[panopoly_magic][patch][2179413] = http://drupal.org/files/issues/panels_undefined_styles-2179413-13.patch
 
@@ -121,7 +121,7 @@ projects[pathauto][subdir] = contrib
 projects[pm_existing_pages][version] = 1.4
 projects[pm_existing_pages][subdir] = contrib
 
-projects[rules][version] = 2.10
+projects[rules][version] = 2.11
 projects[rules][subdir] = contrib
 
 projects[splashify][version] = 1.3
@@ -143,7 +143,7 @@ projects[total_control][patch][2230019] = http://drupal.org/files/issues/array_k
 projects[transliteration][version] = 3.2
 projects[transliteration][subdir] = contrib
 
-projects[uuid][version] = 1.0
+projects[uuid][version] = 1.1
 projects[uuid][subdir] = contrib
 projects[uuid][patch][2074621] = http://drupal.org/files/uuid_services_field_collection_revisions.patch
 projects[uuid][patch][2145567] = http://drupal.org/files/issues/uuid_ctools_context-2145567-16.patch
@@ -170,7 +170,7 @@ projects[views_autocomplete_filters][subdir] = contrib
 projects[views_bootstrap][version] = 3.2
 projects[views_bootstrap][subdir] = contrib
 
-projects[views_bulk_operations][version] = 3.4
+projects[views_bulk_operations][version] = 3.5
 projects[views_bulk_operations][subdir] = contrib
 
 projects[workbench][version] = 1.2

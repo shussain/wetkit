@@ -5,8 +5,6 @@
  * Calls results to administration's pages.
  */
 
-require_once dirname(__FILE__) . '/modules_weight.helpers.inc';
-
 /**
  * Form constructor for Module Weight form.
  *
@@ -17,6 +15,9 @@ require_once dirname(__FILE__) . '/modules_weight.helpers.inc';
  */
 function modules_weight_admin_config_page_form(array $form, array &$form_state) {
   $form['modules']['#tree'] = TRUE;
+
+  // Loading the helper functions file.
+  module_load_include('inc', 'modules_weight', 'modules_weight.helpers');
 
   // Getting the module list.
   $modules = _modules_weight_modules_list();
@@ -64,6 +65,9 @@ function modules_weight_admin_config_page_form(array $form, array &$form_state) 
 function modules_weight_admin_config_page_form_submit(array $form, array &$form_state) {
   // Variable to see if we have uptaded some module weight.
   $printed = FALSE;
+
+  // Loading the helper functions file.
+  module_load_include('inc', 'modules_weight', 'modules_weight.helpers');
 
   foreach ($form_state['values']['modules'] as $name => $weight) {
     if ($weight['weight'] != $weight['old_weight_value']) {

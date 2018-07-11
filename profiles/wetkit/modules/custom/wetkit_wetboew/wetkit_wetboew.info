@@ -17,9 +17,8 @@ features[menu_custom][] = menu-wet-header
 features[menu_custom][] = menu-wet-mid-footer
 features[menu_custom][] = menu-wet-terms
 
-; Information added by Drupal.org packaging script on 2018-01-23
-version = "7.x-4.7"
+; Information added by Drupal.org packaging script on 2018-07-06
+version = "7.x-4.9"
 core = "7.x"
 project = "wetkit_wetboew"
-datestamp = "1516726398"
-
+datestamp = "1530919728"

@@ -5,10 +5,8 @@
  * Drush commands related to the Modules weight module.
  */
 
-require_once dirname(__FILE__) . '/modules_weight.helpers.inc';
-
-define('MODULES_WEIGHT_GREEN_OUPUT', "\033[1;32;40m\033[1m[%s]\033[0m");
-define('MODULES_WEIGHT_RED_OUPUT', "\033[31;40m\033[1m[%s]\033[0m");
+define('MODULES_WEIGHT_GREEN_OUTPUT', "\033[1;32;40m\033[1m[%s]\033[0m");
+define('MODULES_WEIGHT_RED_OUTPUT', "\033[31;40m\033[1m[%s]\033[0m");
 
 /**
  * Implements hook_drush_command().
@@ -124,7 +122,7 @@ function drush_modules_weight_mw_show_system_modules() {
   $args = func_get_args();
   // Getting the values from the config.
   $show_system_modules = variable_get('modules_weight_show_system_modules');
-  $status = $show_system_modules ? sprintf(MODULES_WEIGHT_GREEN_OUPUT, dt('Activated')) : sprintf(MODULES_WEIGHT_RED_OUPUT, dt('Disabled'));
+  $status = $show_system_modules ? sprintf(MODULES_WEIGHT_GREEN_OUTPUT, dt('Activated')) : sprintf(MODULES_WEIGHT_RED_OUTPUT, dt('Disabled'));
 
   if (isset($args[0])) {
     list($value, $status) = $args[0] == 'on' ? array(1, dt('activated')) : array(0, dt('disabled'));
@@ -194,6 +192,10 @@ function drush_modules_weight_mw_reorder_validate() {
  */
 function drush_modules_weight_mw_reorder() {
   $args = func_get_args();
+
+  // Loading the helper functions file.
+  module_load_include('inc', 'modules_weight', 'modules_weight.helpers');
+
   if (count($args) == 2) {
     // Getting the --minus option.
     $minus = drush_get_option('minus');
@@ -227,6 +229,9 @@ function drush_modules_weight_mw_reorder() {
  */
 function drush_modules_weight_mw_list() {
   $result = array();
+
+  // Loading the helper functions file.
+  module_load_include('inc', 'modules_weight', 'modules_weight.helpers');
 
   // Getting the --force option.
   $force = drush_get_option('force');

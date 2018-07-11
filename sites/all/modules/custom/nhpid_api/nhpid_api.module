@@ -2770,28 +2770,32 @@ function nhpid_api_delete_calculated_field_values($nid){
 
 
 function nhpid_api_delete_older_files( $folder = '.', $days, $files = array() ){
-  if (strpos($folder, drupal_realpath("public://")) !== false or strpos($folder, file_directory_temp() . '/') !== false){
-    $ignore = array('.svn', '.', '..' );
+  if (strpos($folder, "public://") === 0 or strpos($folder, file_directory_temp()) . '/' === 0){
+    $ignore = array();
     $dh = @opendir( $folder );
 
-    while( false !== ( $entry = readdir( $dh ) ) ){
+    while(( $entry = readdir( $dh ) ) ){
 
-        if( !in_array( $entry, $ignore ) ){
+        if( in_array( $entry, $ignore ) ){
+			continue;
+		}
+		if(strpos($entry, ".")===0 ){
+			continue;
+		}
 
-            if( is_dir( "$folder/$entry" ) ){
-                nhpid_api_delete_older_files( "$folder/$entry", $days, $files );
+		if( is_dir( "$folder/$entry" ) ){
+			nhpid_api_delete_older_files( "$folder/$entry", $days, $files );
 
-            } else {
+		} else {
 
-              $now = time();
-              $fmtime=filemtime("$folder/$entry");
-              $diff = $now - $fmtime;
-               if ($diff > $days * 24 * 3600){
-                drupal_unlink("$folder/$entry");
-                $files[] = "$folder/$entry";
-              }
-            }
-        }
+		  $now = time();
+		  $fmtime=filemtime("$folder/$entry");
+		  $diff = $now - $fmtime;
+		   if ($diff > $days * 24 * 3600){
+			drupal_unlink("$folder/$entry");
+			$files[] = "$folder/$entry";
+		  }
+		}
      }
      closedir( $dh );
   }
@@ -2955,4 +2959,15 @@ function nhpid_api_unparse_url(array $parsed) {
         $get('path') .
         (strlen($query) ? "?$query" : '') .
         (strlen($fragment) ? "#$fragment" : '');
+}
+/*
+ * This hook is used for bootstrap theme for the module Entity Reference View Widget. Otherwise, the checkbox titles will be missing.
+ */
+
+function nhpid_api_entityreference_view_widget_rows_alter(&$rows, $entities, $settings) {
+  foreach (element_children($rows) as $key => $child) {
+    if ($rows[$key]['target_id']['#type'] == 'checkbox') {
+      $rows[$key]['target_id']['#title'] = $rows[$key]['target_id']['#field_suffix'];
+    }
+  }  
 }
