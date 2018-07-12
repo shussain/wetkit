@@ -1431,6 +1431,15 @@ function assessment_central_system_lock_access($account=null){
 
 }
 
+function assessment_central_views_post_execute(&$view){
+	global $user;
+	if ($view->name == 'assessment_central_export'){
+		$query = $view->query->query();
+		$query->range();
+		$result=$query->execute()->fetchAll();
+		$_SESSION['assessment_central_export_result'][$user->uid] = $result;
+	}
+}
 
 function _assessment_central_node_access_callback($op, $node, $account=null){
 	global $user;

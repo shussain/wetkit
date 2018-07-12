@@ -1092,8 +1092,115 @@ function assessment_central_export_history_submit($form, &$form_state){
   }
   $form_state['storage']['values'] = $form_state['values'];
 }
-
 function assessment_central_export_all_form($form, &$form_state=NULL){
+	global $user;
+  $result=$_SESSION['assessment_central_export_result'][$user->uid];
+  $master_list = "Combo/MI name\tType\tNID\n";
+  $combo_ing_nids = array();
+  $combo_ing_titles = array();
+   foreach($result as $rc) {
+    $nid = $rc->nid;
+	$type=$rc->node_type;
+	$node = node_load($nid);
+	$wrapper=entity_metadata_wrapper('node', $node);
+    $node_name = '';
+    if ($type == 'mi'){
+      $node_name = $wrapper -> field_mi_nhpid_name->value()->title;
+    }
+    else if ($type == 'combo'){
+      $node_name = $wrapper -> field_combo_name->value();
+    }
+    $master_list = $master_list . "$node_name\t$type\t$nid\n";
+	$nids[$nid] = $nid;
+    if ($rc -> node_type =='combo'){
+		//$node = node_load($hit->nid);
+		$wrapper = entity_metadata_wrapper('node', $node);
+		if (!empty($node -> field_combo_nhpid_name)){
+			foreach($wrapper -> field_combo_nhpid_name as $ing_item) {
+				$combo_ing_nids[$ing_item -> nid->raw()] = $ing_item -> nid->raw();
+				$combo_ing_titles[$ing_item -> nid->raw()] = $ing_item -> title->raw();
+			}
+		}
+    }
+  }
+  $master_list_file =  "master_nid_list.tsv";
+  $master_list_file_path =  "public://download_html_file";
+  if (!is_dir($master_list_file_path)) drupal_mkdir($master_list_file_path);
+  $destination = file_destination("$master_list_file_path/$master_list_file", FILE_EXISTS_RENAME);
+  $url = file_create_url($destination);
+  file_unmanaged_save_data($master_list,$destination, FILE_EXISTS_REPLACE);
+  $link = l("Download master nid list", $url);
+  $form['master_list']=array(
+    '#type'=>'item',
+    '#markup' =>$link,
+  );
+  
+  
+  $combo_ing_nids = array_diff($combo_ing_nids, $nids);
+  if ($combo_ing_nids){
+    $links = array();
+    foreach($combo_ing_nids as $nid){
+        $links[] = l("$nid (" . $combo_ing_titles[$nid] . ")" , "node/$nid", array('attributes' => array('target' => '_blank')));
+    }
+    $list = theme_item_list(array('items' => $links, 'title' => '', 'type' => 'ul', 'attributes' => array()));
+    $message = "Your NID list contains combo nodes. The following MI nodes are used by those combo nodes. However, they are not in your node list. You may need to export them, too. ";
+    
+    $message = $message . $list;
+    $form['warning_message']=array(
+      '#type' => 'item',
+      '#markup' =>  $message,
+    );
+  }
+  
+  $nid_list = !empty($form_state['values']['nid_list'])? $form_state['values']['nid_list'] : implode("\n", $nids);
+  $form['nid_list']=array(
+    '#type' => 'textarea',
+    '#default_value' =>  $nid_list,
+    '#title' => 'NID list',
+    '#cols' => 40,
+    '#rows' => 10,
+    '#description' => "Yan can paste a new NID list here: node nids delimited by a space, tab, comma, semicolon, or new line feed.",
+  );
+  $form['lock'] = array(
+	  '#type' => 'fieldset',
+	  '#title' => 'Lock the systme to prevent data from being changed',
+	  '#collapsible' => TRUE,
+	  '#collapsed' => FALSE,
+
+	  );
+  $lock_tmp = variable_get(DATA_EXPORTING_LOCK_TEMP_VARIABLE, 0);
+  $lock_persistent = variable_get(SYSTEM_LOCK_VARIABLE, 0);
+
+  $exporting_data_lock = $lock_persistent or $lock_tmp;
+  $info ='The system is locked temporarily.';
+  $form['lock']['status'] = array(
+    '#type' => 'item',
+    '#description' => t("<em>$info</em>"),
+    '#access' => $lock_tmp,
+  );
+  $lock = !empty($form_state['values']['lock_choice']) ? $form_state['values']['lock_choice'] : TRUE;
+  $form['lock']['lock_choice'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Lock the system temporarily when exporting is in progress'),
+    '#default_value' => $lock,
+  );
+  $form['lock']['release-lock-tmp'] = array(
+    '#type' => 'submit',
+    '#value' => t('Release Tmp Lock'),
+    '#access' => $lock_tmp,
+  );
+  $form['lock']['description'] = array(
+    '#type' => 'item',
+    '#description' => t('If the system is locked temporarily, all users are unable to edit data.'),
+  );
+  $form['batch_download'] = array(
+    '#type' => 'submit',
+    '#value' => 'Download',
+  );
+  return $form;
+}
+
+function assessment_central_export_all_form_($form, &$form_state=NULL){
   //include_once 'ZipArchive.php';
   //$zip = new ZipArchive();
   $referer = $_SERVER['HTTP_REFERER'];
