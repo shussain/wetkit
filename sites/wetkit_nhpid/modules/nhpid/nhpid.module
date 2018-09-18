@@ -15,6 +15,15 @@ function nhpid_cron(){
  nhpid_api_save_all_calculated_field_values(array(), true);
  watchdog('cron', 'The calculated field values have been updated.');
 }
+function nhpid_update_7200(&$sandbox){
+	$table='field_collection_calculated_value';
+	$field_name ='calculation_date';
+	$field=array(
+		'type' => 'int', 
+		'not null' => False, 
+	);
+	db_add_field($table,$field_name,$field);
+}
 function nhpid_init(){
 	global $user;
 	if (!nhpid_system_lock_access()){

@@ -1,0 +1,117 @@
+<?php
+// $Id$
+
+/**
+* Install the nhpid_web_service module
+* @file
+*/
+
+/**
+* Implementation of hook_install()
+*/
+function nhpid_web_service_install() {
+   
+}
+
+/**
+* Implementation of hook_uninstall()
+*/
+function nhpid_web_service_uninstall() {
+   
+}
+
+/**
+* Implementation of hook_schema()
+* @return array of Schema API table definitions.
+*/
+function nhpid_web_service_schema() {
+	$schema=array();
+	$table_name='nhpid_web_service_log';
+	if(!db_table_exists($table_name)){
+		$schema[$table_name] = array(
+			'description' => 'TODO: please describe this table!',
+			'fields' => array(
+				'log_id' => 
+				  array (
+					'description' => 'The primary identifier for a log.',
+					'type' => 'serial',
+					'unsigned' => true,
+					'not null' => true,
+				  ),
+				'export_date' => array(
+					'description' => 'Local time when exporting, Unix timestamp',
+					'type' => 'int',
+					'unsigned' => TRUE,
+					'not null' => TRUE,
+					),
+				'error_type' => array(
+					'description' => 'error: error log; warning; other log',
+					'type' => 'text',
+					'size' => 'tiny',
+					'not null' => FALSE,
+					),
+				'nid' => array(
+					'description' => 'Node nid',
+					'type' => 'int',
+					'unsigned' => TRUE,
+					'not null' => TRUE,
+					),
+				'content_type' => array(
+					'description' => 'Content type',
+					'type' => 'text',
+					'size' => 'tiny',
+					'not null' => FALSE,
+					),
+				'log' => array(
+					'description' => 'export log',
+					'type' => 'text',
+					'size' => 'medium',
+					'not null' => FALSE,
+					),
+					
+			),
+	
+		
+			'primary key' => 
+			array ('log_id',
+			),
+		);
+	}
+	$table_name='nhpid_web_service_export_time';
+	if(!db_table_exists($table_name)){
+		$schema[$table_name] = array(
+			'description' => 'TODO: please describe this table!',
+			'fields' => array(
+				'nid' => array(
+					'description' => 'Node nid',
+					'type' => 'int',
+					'unsigned' => TRUE,
+					'not null' => true,
+					),
+				'export_date' => array(
+					'description' => 'Local time when exporting, Unix timestamp',
+					'type' => 'int',
+					'unsigned' => TRUE,
+					'not null' => TRUE,
+					),
+				
+				'status' => array(
+					'description' => 'Boolean indicating whether the the data of node is populated to the NHPID database. 0: failed; 1: successful.',
+					'type' => 'int',
+					'unsigned' => TRUE,
+					'not null' => true,
+					),
+		
+			),
+	
+		
+			'primary key' => 
+			array ('nid',
+			),
+		);
+	}
+    
+    
+    return $schema;
+}
+

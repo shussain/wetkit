@@ -263,7 +263,7 @@ function get_all_node_by_type($node_type, $sql = NULL, $args = array(), $options
 	$data = array();
 
   if ($node_type) {
-    $sql = "SELECT nid FROM {node} WHERE type=:type order by nid desc";
+    $sql = "SELECT nid, changed FROM {node} WHERE type=:type order by nid desc";
 		$args=array(':type' => $node_type);
   }
   $result = db_query($sql, $args);
@@ -278,32 +278,39 @@ function get_all_node_by_type($node_type, $sql = NULL, $args = array(), $options
 			//dpm($cached);
 			$line = $cached[$row->nid];
 		}
-		if (!$line){
+		//ddl($line, '$line');
+		if (!$line or !$line['calculation_date'] or $row->changed > $line['calculation_date']){
 			$node = node_load($row->nid);
+			nhpid_api_save_calculated_field_values($node);
+			$line=nhpid_api_get_calculated_field_values(array($node->nid));
+			//ddl($line, '$line2');
+			/*
 			$line = array();
+			
 			$line['title'] = $node -> title;
 			$line['nid'] = $node -> nid;
 			$line['changed'] = format_date($node->changed, 'short', '', $user_time_zone,  NULL);
 			if (!$node_type) $node_type = $node -> type;
-				$workflow_state = workflow_get_sid_label(workflow_node_current_state($node));
+			$workflow_state = workflow_get_sid_label(workflow_node_current_state($node));
 
-				$line['workflow_state'] = (bool)$workflow_state ? $workflow_state : '';
-				$fields = field_info_instances('node', $node_type);
-				foreach($fields as $field_name => $field_info){
-					$display = array();
-					switch (nhpid_api_get_field_type($field_name)){
-					case 'datestamp':
-						$display['settings'] = array('format_type' => $date_type);
-					break;
-					case "number_decimal":
-					case "number_float":
-						$display['type']='number_unformatted';
-					break;
+			$line['workflow_state'] = (bool)$workflow_state ? $workflow_state : '';
+			$fields = field_info_instances('node', $node_type);
+			foreach($fields as $field_name => $field_info){
+				$display = array();
+				switch (nhpid_api_get_field_type($field_name)){
+				case 'datestamp':
+					$display['settings'] = array('format_type' => $date_type);
+				break;
+				case "number_decimal":
+				case "number_float":
+					$display['type']='number_unformatted';
+				break;
 				}
 				$item_values = $function($node, $field_name, $display, $node ->language , FALSE, $force_update);
-				if ($item_values) $line[$field_name] =  is_array($item_values)? implode(';', $item_values): $item_values;
+				if ($item_values) $line[$field_name] =  is_array($item_values)? 	implode(';', $item_values): $item_values;
 			}
 		  //drupal_set_message(nhpid_api_dump($line, 'green', TRUE));
+			*/
 		}
 		foreach($line as $field_name => $value){
 			if (is_array($value)) $line[$field_name] = implode(';', $value);
@@ -2297,9 +2304,9 @@ function nhpid_api_get_node_by_title_type($node_title, $node_type) {
   ->range(0,1)
   ->execute();
   if (!empty($entities['node'])) {
-    $node = node_load(array_shift(array_keys($entities['node'])));
+    return node_load(array_shift(array_keys($entities['node'])));
   }
-	return $node;
+	return NULL;
 }
 
 function nhpid_api_reset_field_permissions($field_name, $roles = array(), $permissions = array()){
@@ -2689,7 +2696,6 @@ function nhpid_api_save_calculated_field_values($node){
 		if (!empty($value)){
 			$values[$field_name] = $value;
 		}
-		//dpm($value);
 	}
 	if (!empty($values)){
 		$values['title'] = $node -> title;
@@ -2698,8 +2704,9 @@ function nhpid_api_save_calculated_field_values($node){
 		$workflow_state = $values['field_workflow'];
 		$values['workflow_state'] = (bool)$workflow_state ? $workflow_state : '';
 		$values = serialize($values);
-        $sql = 'insert into {field_collection_calculated_value} (nid, type, workflow_state, value) values(:nid,:type, :workflow_state, :value) ON DUPLICATE KEY UPDATE type=:type2, workflow_state=:workflow_state2,value=:value2';
-		db_query($sql, array(':nid' => $node -> nid, ':type' => $node->type, ':workflow_state'=>$workflow_state, ':value' => $values, ':type2' => $node->type, ':workflow_state2'=>$workflow_state, ':value2' => $values));
+		$now=time();
+        $sql = 'insert into {field_collection_calculated_value} (nid, type, workflow_state, value, calculation_date) values(:nid,:type, :workflow_state, :value, :calculation_date) ON DUPLICATE KEY UPDATE type=:type2, workflow_state=:workflow_state2,value=:value2, calculation_date=:calculation_date2';
+		db_query($sql, array(':nid' => $node -> nid, ':type' => $node->type, ':workflow_state'=>$workflow_state, ':value' => $values, ':type2' => $node->type, ':workflow_state2'=>$workflow_state, ':value2' => $values, ':calculation_date' => $now, ':calculation_date2' => $now));
   }
 	
 }
@@ -2730,9 +2737,9 @@ function nhpid_api_save_all_calculated_field_values($node_types = array(), $rece
 	}
 }
 
-function nhpid_api_get_calculated_field_values($nids=array(), $field_name=null, $node_type=null,$workflow_sids=array()){
+function nhpid_api_get_calculated_field_values($nids=array(), $field_name=null, $node_type=null,$workflow_sids=array(), $date_cutoff=null){
 	$sql = db_select('field_collection_calculated_value', 'fccv');
-	$sql -> fields('fccv', array('value'));
+	$sql -> fields('fccv');
 	if(!empty($nids)) {
 		$sql -> condition('fccv.nid', $nids, 'IN');
 	}
@@ -2742,15 +2749,17 @@ function nhpid_api_get_calculated_field_values($nids=array(), $field_name=null, 
 	else{
 		return array();
 	}
+	
 	if (!empty($workflow_sid)) $sql -> condition('fccv.workflow_state', $workflow_sids, 'IN');
 	$result = $sql -> execute();
 	$rtn = array();
 	$user_time_zone = drupal_get_user_timezone();
-	while($value = $result -> fetchColumn(0)){
-		if ($value){
-			$value = unserialize($value);
+	while($rc = $result -> fetchObject()){
+		if ($rc->value){
+			$value = unserialize($rc->value);
+			$value['calculation_date']=$rc->calculation_date;
 			if (isset($value['changed'])){
-        $value['changed'] = format_date($value['changed'], 'short', '', $user_time_zone,  NULL);
+				$value['changed_timestamp'] = format_date($value['changed'], 'short', '', $user_time_zone,  NULL);
 			}
 			if ($field_name){
 				$rtn[$value['nid']] = $value[$field_name];

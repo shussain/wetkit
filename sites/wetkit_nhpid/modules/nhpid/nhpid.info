@@ -5,4 +5,4 @@ dependencies[] = nhpid_api
 core = 7.x
 package = NHPID
 
-version = "7.x-1.0-dev"
+version = "7.x-2.0"

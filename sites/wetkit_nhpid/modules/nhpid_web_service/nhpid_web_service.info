@@ -1,0 +1,14 @@
+name = NHPID Web Service
+description = WebService APIs for NHPID.
+core = 7.x
+package = NHPID
+project = NHPID
+dependencies[] = services
+dependencies[] = rest_server
+dependencies[] = oauth_common
+dependencies[] = oauth_common_providerui
+dependencies[] = services_oauth
+dependencies[] = services_basic_auth
+dependencies[] = nhpid
+dependencies[] = nhpid_api
+

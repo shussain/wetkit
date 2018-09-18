@@ -238,7 +238,6 @@ class FieldCollectionItemEntity extends Entity {
       $current_host = entity_revision_load($this->hostEntityType, $this->hostEntityRevisionId);
       list($current_id) = entity_extract_ids($this->hostEntityType, $current_host);
     }
-
     if ($current_id == $recieved_id) {
       $this->hostEntity = $entity;
       $delta = $this->delta();

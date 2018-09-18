@@ -1,0 +1,192 @@
+
+<?php
+/**
+ * @file
+ * Module file for NHPID web Services.
+ * Contains the resource declarations for the service APIs
+ * and other commons functions/hooks. if necessary
+ */
+ 
+
+// Implementation of hook_cron
+function nhpid_web_service_cron(){
+	//deletes extra log records if number of records exceeds allowed number
+	$table = 'nhpid_web_service_log';
+	$setting=variable_get('nhpid_web_service_setting', array());
+	if ($setting['cron_is_on']){
+		$age_cutoff = isset($setting['error_log_age'])? $setting['error_log_age'] * 24 * 3600: 0;
+		if($age_cutoff){
+			$now = time();
+			db_delete($table)
+			->condition('export_date', $now-$age_cutoff, '<' )
+			->execute();
+		}
+	}
+}
+
+/***
+ * hook_menu
+ */ 
+function nhpid_web_service_menu() {
+
+  $items = array();
+  
+  $root = 'admin/nhpid/web_service';
+	
+	$items[$root] = array(
+    'title' => t('Web Service'),
+    'description' => t('Web service settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nhpid_web_service_log_form'),
+    'access arguments' => array('access nhpid web service setting'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'forms.inc',
+   );
+   
+  $items[$root . '/web_service_log'] = array(
+    'title' => t('Web Service Log'),
+    'weight' => -3,
+    'access arguments' => array('access nhpid web service setting'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nhpid_web_service_log_form'),
+    'file' => 'forms.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items[$root . '/web_service_log_clear'] = array(
+    'title' => t('Clear Log'),
+    'weight' => -2,
+    'access arguments' => array('access nhpid web service setting'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nhpid_web_service_log_clear_form'),
+    'file' => 'forms.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items[$root . '/web_service_log_setting'] = array(
+    'title' => t('Web Service log settings'),
+	'weight' => -1,
+    'description' => t('Web Service settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nhpid_web_service_setting_form'),
+    'access arguments' => array('access nhpid web service setting'),
+	'type' => MENU_LOCAL_TASK,
+	'file' => 'forms.inc',
+	'menu_name' => 'main-menu',
+  );
+  /*
+  $items[$root . '/nhpid_web_service_variables'] = array(
+    'title' => t('Web Service Variables'),
+    'description' => t('Web Service variables settings form.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('variable_group_form', 'nhpid_web_service'),
+    'access arguments' => array('access nhpid web service setting'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items[$root . '/web_service_log_setting'] = array(
+    'title' => t('Web Service log settings'),
+	'weight' => -1,
+    'description' => t('Web Service log settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('variable_group_form', 'nhpid_web_service_log'),
+    'access arguments' => array('access nhpid web service setting'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  */
+  $main_root = 'nhpid_web_service';
+	
+	$items[$main_root] = array(
+    'title' => t('Web Service'),
+    'description' => t('Web Service'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nhpid_web_service_export_log_form'),
+    'access arguments' => array('access nhpid web service setting'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'forms.inc',
+	'menu_name' => 'main-menu',
+   );
+   
+  
+  $items[$main_root . '/web_service_log'] = array(
+    'title' => t('Web Service Log'),
+    'weight' => -3,
+    'access arguments' => array('access nhpid web service setting'),
+	
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nhpid_web_service_log_form'),
+    'file' => 'forms.inc',
+    'type' => MENU_LOCAL_TASK,
+	'menu_name' => 'main-menu',
+  );
+ $items[$main_root . '/web_service_log_clear'] = array(
+    'title' => t('Clear Log'),
+    'weight' => -2,
+    'access arguments' => array('access nhpid web service setting'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nhpid_web_service_log_clear_form'),
+    'file' => 'forms.inc',
+    'type' => MENU_LOCAL_TASK,
+	'menu_name' => 'main-menu',
+  );
+  $items[$main_root . '/web_service_log_setting'] = array(
+    'title' => t('Web Service log settings'),
+	'weight' => -1,
+    'description' => t('Web Service settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nhpid_web_service_setting_form'),
+    'access arguments' => array('access nhpid web service setting'),
+	'type' => MENU_LOCAL_TASK,
+	'file' => 'forms.inc',
+	'menu_name' => 'main-menu',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_services_resources().
+ * Create service resource for APIs to return the necessary json data.
+ */
+function nhpid_web_service_services_resources() {
+  $resources = array();
+//Include the necessary inc files.
+  module_load_include('inc', 'nhpid_web_service', 'nhpid_web_service.services');
+
+//Service Apis for contents.
+  $resources += nhpid_web_service_resource();
+	//dpm($resources);
+  return $resources;
+
+}
+
+function nhpid_web_service_permission() {
+    return array(
+    
+    'access nhpid web service' => array(
+      'title' => t('Access NHPID web service'), 
+      'description' => t(''),
+      ),
+    'access nhpid web service setting' => array(
+      'title' => t('Access NHPID web service setting'), 
+      'description' => t(''),
+      ),
+    );
+}
+
+function nhpid_web_service_get_export_time($nid){
+	$table = 'nhpid_web_service_export_time';
+	$result=db_select($table, 't')
+	->fields('t')
+	->condition('t.nid', $nid, '=')
+	->execute()
+	->fetchObject();
+	
+	return $result->export_date;
+}
+function nhpid_web_service_get_export_status($nid){
+	$table = 'nhpid_web_service_export_time';
+	$result=db_select($table, 't')
+	->fields('t')
+	->condition('t.nid', $nid, '=')
+	->execute()
+	->fetchObject();
+	
+	return $result->status;
+}
